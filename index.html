@@ -219,24 +219,67 @@ const allGames = [
 
 ];
 
-function openGamesApp(){
-  const content=document.createElement('div');
-  content.id='gamesAppInner';
-  content.innerHTML='<h2 style="color:#fff;margin-bottom:10px">Games Library</h2>';
-  
-  allGames.forEach(g=>{
-    const card=document.createElement('div');
-    card.className='game-card';
+function openGamesApp() {
+  const content = document.createElement('div');
+  content.id = 'gamesAppInner';
+  content.style.maxHeight = '100%';       // make container height limited
+  content.style.overflowY = 'auto';      // enable vertical scrolling
+  content.innerHTML = '<h2 style="color:#fff;margin-bottom:10px">Games Library</h2>';
+
+  const installed = JSON.parse(localStorage.getItem('desktopGames') || '[]');
+
+  allGames.forEach(g => {
+    const isInstalled = installed.some(x => x.name === g.name);
+
+    const card = document.createElement('div');
+    card.className = 'game-card';
     card.innerHTML = `
       <img src="${g.img}">
       <div class="game-info">
-        <h3>${g.name}</h3>
-      </div>`;
+        <div>
+          <h3>${g.name}</h3>
+          <p>${g.desc || ''}</p>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button class="playBtn" style="display:${isInstalled ? 'inline-block' : 'none'}">Open</button>
+          <button class="installBtn">${isInstalled ? 'Installed' : 'Download'}</button>
+          <button class="deleteBtn" style="display:${isInstalled ? 'inline-block' : 'none'};background:#ff605c">Delete</button>
+        </div>
+      </div>
+    `;
+
+    const playBtn = card.querySelector('.playBtn');
+    const installBtn = card.querySelector('.installBtn');
+    const deleteBtn = card.querySelector('.deleteBtn');
+
+    playBtn.onclick = (e) => { e.stopPropagation(); openGameWindow(g); };
+    installBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (!isInstalled) {
+        installGame(g);
+        playBtn.style.display = 'inline-block';
+        installBtn.textContent = 'Installed';
+        deleteBtn.style.display = 'inline-block';
+      }
+    };
+    deleteBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (confirm('Delete this game from desktop?')) {
+        deleteGame(g.name);
+        card.remove();
+      }
+    };
+
+    // click on card also opens game
     card.onclick = () => openGameWindow(g);
+
     content.appendChild(card);
   });
 
-  openWindow({title:'Games', icon:'https://cdn-icons-png.flaticon.com/512/1055/1055646.png'}, content);
+  openWindow(
+    { title: 'Games', icon: 'https://cdn-icons-png.flaticon.com/512/1055/1055646.png' },
+    content
+  );
 }
 
 /* delete game */
