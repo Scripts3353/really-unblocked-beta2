@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Really Unbl0ck3d OS</title>
 <style>
-/* --- your original styles preserved --- */
 *{box-sizing:border-box;margin:0;padding:0;font-family:Inter, Arial, sans-serif;user-select:none}
 html,body{height:100%;width:100%;overflow:hidden}
 body{background:#111}
@@ -39,13 +38,6 @@ body{background:#111}
 .c-max{background:#00ca4e}
 .window-content{flex:1;background:#0b0c0d;padding:0;overflow:hidden}
 .resizer{position:absolute;right:4px;bottom:4px;width:12px;height:12px;cursor:se-resize}
-#gamesAppInner{padding:14px}
-.game-card{display:flex;background:#111;border-radius:10px;margin-bottom:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
-.game-card img{width:140px;height:96px;object-fit:cover}
-.game-info{padding:10px;display:flex;flex-direction:column;justify-content:space-between}
-.game-info h3{color:#fff;margin-bottom:6px;font-size:15px}
-.game-info p{color:#cfcfcf;font-size:13px;margin-bottom:8px}
-.game-info button{align-self:flex-start;padding:8px 10px;border-radius:8px;border:none;background:#1e90ff;color:#fff;cursor:pointer}
 #taskbar{position:fixed;left:0;right:0;bottom:0;height:64px;background:linear-gradient(180deg,rgba(0,0,0,0.35),rgba(0,0,0,0.6));display:flex;align-items:center;justify-content:space-between;padding:8px 16px;backdrop-filter: blur(6px);z-index:9998}
 .task-left{display:flex;align-items:center;gap:12px}
 .avatar{width:44px;height:44px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,0.08)}
@@ -57,6 +49,15 @@ body{background:#111}
 .dock-item.running{box-shadow:0 6px 18px rgba(0,0,0,0.6);transform:translateY(-6px)}
 .task-right{color:#fff;font-weight:600}
 .hidden{display:none}
+
+/* game/app cards scroll */
+#gamesAppInner, #appsAppInner{padding:14px;overflow-y:auto;height:100%}
+.game-card{display:flex;background:#111;border-radius:10px;margin-bottom:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+.game-card img{width:140px;height:96px;object-fit:cover}
+.game-info{padding:10px;display:flex;flex-direction:column;justify-content:space-between}
+.game-info h3{color:#fff;margin-bottom:6px;font-size:15px}
+.game-info p{color:#cfcfcf;font-size:13px;margin-bottom:8px}
+.game-info button{align-self:flex-start;padding:8px 10px;border-radius:8px;border:none;background:#1e90ff;color:#fff;cursor:pointer}
 </style>
 </head>
 <body>
@@ -107,7 +108,7 @@ let chosenGradient=gradients[0];
 let openWindows={};
 let dockEntries={};
 
-/* gradient picker */
+// ------------- Gradient Picker -------------
 function makeGradientOptions(){
   gradientChoices.innerHTML="";
   gradients.forEach((g,i)=>{
@@ -134,32 +135,61 @@ finishBtn.addEventListener('click',()=>{
   setupModal.style.display='none';
   initDesktop();
 });
-if(localStorage.getItem('deviceName')){setupModal.style.display='none';initDesktop();}
 
-/* time */
-function updateTime(){const n=new Date();const hh=String(n.getHours()).padStart(2,'0');const mm=String(n.getMinutes()).padStart(2,'0');taskTime.textContent=`${hh}:${mm}`;}
-setInterval(updateTime,1000);updateTime();
-
-/* init desktop */
+// ------------- Initialize Desktop -------------
 function initDesktop(){
-  desktop.style.background=localStorage.getItem('wallpaper')||chosenGradient;
-  taskAvatar.src=localStorage.getItem('avatarURL')||"https://cdn-icons-png.flaticon.com/512/1055/1055646.png";
+  desktop.style.background=localStorage.getItem('wallpaper')||gradients[0];
   taskDeviceName.textContent=localStorage.getItem('deviceName')||"Really Unbl0ck3d";
-  desktop.innerHTML="";
-  addApp({id:'app-settings',name:'Settings',img:'https://cdn-icons-png.flaticon.com/512/3524/3524659.png'},openSettingsApp);
-  addApp({id:'app-credits',name:'Credits',img:'https://cdn-icons-png.flaticon.com/512/1828/1828884.png'},openCreditsApp);
-  addApp({id:'app-games',name:'Games',img:'https://cdn-icons-png.flaticon.com/512/1055/1055646.png'},openGamesApp);
-  JSON.parse(localStorage.getItem('desktopGames')||'[]').forEach(g=>addApp({id:'game-'+slug(g.name),name:g.name,img:g.img,file:g.file},()=>openGameWindow(g)));
-}
-function addApp(meta,fn){const e=document.createElement('div');e.className='app';e.innerHTML=`<img src="${meta.img}"><div>${meta.name}</div>`;e.onclick=fn;desktop.appendChild(e);}
-function addDockIcon(id,title,icon,winId){
-  if(dockEntries[id]){dockEntries[id].winId=winId;dockEntries[id].el.classList.add('running');return;}
-  const e=document.createElement('div');e.className='dock-item running';e.innerHTML=`<img src="${icon}" title="${title}">`;
-  e.onclick=()=>{const w=openWindows[dockEntries[id].winId]?.el;if(!w)return;w.style.display=w.style.display==='none'?'flex':'none';};
-  dockCenter.appendChild(e);dockEntries[id]={el:e,winId};
-}
-function removeDockIcon(id){if(!dockEntries[id])return;dockEntries[id].el.remove();delete dockEntries[id];}
+  taskAvatar.src=localStorage.getItem('avatarURL')||"https://cdn-icons-png.flaticon.com/512/1055/1055646.png";
 
+  addApp({id:'app-games', name:'Games', img:'https://cdn-icons-png.flaticon.com/512/1055/1055646.png'}, openGamesApp);
+  addApp({id:'app-apps', name:'Apps', img:'https://cdn-icons-png.flaticon.com/512/1055/1055646.png'}, openAppsApp);
+
+  setInterval(()=>taskTime.textContent=new Date().toLocaleTimeString(),1000);
+}
+
+// ------------- Add App to Desktop and Dock -------------
+function addApp({id,name,img},callback){
+  const app=document.createElement('div');
+  app.className='app';
+  app.id=id;
+  app.innerHTML=`<img src="${img}"><div>${name}</div>`;
+  app.onclick=callback;
+  desktop.appendChild(app);
+
+  const dockItem=document.createElement('div');
+  dockItem.className='dock-item';
+  dockItem.innerHTML=`<img src="${img}">`;
+  dockItem.onclick=callback;
+  dockCenter.appendChild(dockItem);
+  dockEntries[id]=dockItem;
+}
+
+// ------------- Open Window Function -------------
+function openWindow({title,icon},content){
+  const win=document.createElement('div');
+  win.className='window';
+  win.style.display='flex';
+  win.innerHTML=`
+    <div class="window-header">
+      <div class="window-left">
+        <div class="circle c-close"></div>
+        <div class="circle c-min"></div>
+        <div class="circle c-max"></div>
+        <div class="window-title">${title}</div>
+      </div>
+    </div>
+    <div class="window-content"></div>
+    <div class="resizer"></div>
+  `;
+  win.querySelector('.window-content').appendChild(content);
+
+  // Close button
+  win.querySelector('.c-close').onclick=()=>win.remove();
+  desktop.appendChild(win);
+}
+
+// ------------- GAMES APP -------------
 /* games app */
 const allGames = [
   {name:'SUGGESTIONS!!', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/596-uu.png', file:'games/COMMENTS.html'},
@@ -219,163 +249,162 @@ const allGames = [
 
 ];
 
-function openGamesApp() {
-  const content = document.createElement('div');
-  content.id = 'gamesAppInner';
-  content.style.maxHeight = '100%';       // make container height limited
-  content.style.overflowY = 'auto';      // enable vertical scrolling
-  content.innerHTML = '<h2 style="color:#fff;margin-bottom:10px">Games Library</h2>';
+function openGamesApp(){
+  const content=document.createElement('div');
+  content.id='gamesAppInner';
+  content.style.overflowY='auto';
+  content.innerHTML='<h2 style="color:#fff;margin-bottom:10px">Games Library</h2>';
 
-  const installed = JSON.parse(localStorage.getItem('desktopGames') || '[]');
+  const installed = JSON.parse(localStorage.getItem('desktopGames')||'[]');
 
-  allGames.forEach(g => {
-    const isInstalled = installed.some(x => x.name === g.name);
-
-    const card = document.createElement('div');
-    card.className = 'game-card';
+  allGames.forEach(g=>{
+    const isInstalled = installed.some(x=>x.name===g.name);
+    const card=document.createElement('div');
+    card.className='game-card';
     card.innerHTML = `
       <img src="${g.img}">
       <div class="game-info">
-        <div>
-          <h3>${g.name}</h3>
-          <p>${g.desc || ''}</p>
-        </div>
+        <h3>${g.name}</h3>
+        <p>${g.desc||''}</p>
         <div style="display:flex;gap:8px;margin-top:6px">
-          <button class="playBtn" style="display:${isInstalled ? 'inline-block' : 'none'}">Open</button>
-          <button class="installBtn">${isInstalled ? 'Installed' : 'Download'}</button>
-          <button class="deleteBtn" style="display:${isInstalled ? 'inline-block' : 'none'};background:#ff605c">Delete</button>
+          <button class="playBtn" style="display:${isInstalled?'inline-block':'none'}">Open</button>
+          <button class="installBtn">${isInstalled?'Installed':'Download'}</button>
+          <button class="deleteBtn" style="display:${isInstalled?'inline-block':'none'};background:#ff605c">Delete</button>
         </div>
+        <div class="downloadBar" style="height:6px;width:0%;background:#1e90ff;margin-top:6px;border-radius:3px;transition:width 0.3s;"></div>
       </div>
     `;
-
     const playBtn = card.querySelector('.playBtn');
     const installBtn = card.querySelector('.installBtn');
     const deleteBtn = card.querySelector('.deleteBtn');
+    const downloadBar = card.querySelector('.downloadBar');
 
-    playBtn.onclick = (e) => { e.stopPropagation(); openGameWindow(g); };
-    installBtn.onclick = (e) => {
+    playBtn.onclick = (e)=>{ e.stopPropagation(); openGameWindow(g); };
+
+    installBtn.onclick = (e)=>{
       e.stopPropagation();
-      if (!isInstalled) {
-        installGame(g);
-        playBtn.style.display = 'inline-block';
-        installBtn.textContent = 'Installed';
-        deleteBtn.style.display = 'inline-block';
+      if(!isInstalled){
+        installBtn.disabled=true;
+        let progress=0;
+        const interval=setInterval(()=>{
+          progress += Math.random()*20;
+          if(progress>=100){ progress=100; clearInterval(interval);
+            let installedGames = JSON.parse(localStorage.getItem('desktopGames')||'[]');
+            installedGames.push(g);
+            localStorage.setItem('desktopGames',JSON.stringify(installedGames));
+            installBtn.textContent='Installed'; installBtn.disabled=false;
+            playBtn.style.display='inline-block'; deleteBtn.style.display='inline-block';
+          }
+          downloadBar.style.width = progress + '%';
+        },300);
       }
     };
-    deleteBtn.onclick = (e) => {
+
+    deleteBtn.onclick = (e)=>{
       e.stopPropagation();
-      if (confirm('Delete this game from desktop?')) {
-        deleteGame(g.name);
+      if(confirm('Delete this game from desktop?')){
+        let installedGames = JSON.parse(localStorage.getItem('desktopGames')||'[]');
+        installedGames = installedGames.filter(x=>x.name!==g.name);
+        localStorage.setItem('desktopGames',JSON.stringify(installedGames));
         card.remove();
       }
     };
 
-    // click on card also opens game
-    card.onclick = () => openGameWindow(g);
+    content.appendChild(card);
+  });
+
+  openWindow({title:'Games',icon:'https://cdn-icons-png.flaticon.com/512/1055/1055646.png'},content);
+}
+
+// ------------- APPS APP -------------
+const allApps = [
+  {name:'Calculator', img:'https://cdn-icons-png.flaticon.com/512/2921/2921822.png', file:'apps/calculator.html', desc:'Simple calculator'},
+  {name:'Notepad', img:'https://cdn-icons-png.flaticon.com/512/1250/1250615.png', file:'apps/notepad.html', desc:'Write notes'},
+  {name:'Weather', img:'https://cdn-icons-png.flaticon.com/512/1779/1779983.png', file:'apps/weather.html', desc:'Check weather'},
+];
+
+function openAppsApp(){
+  const content=document.createElement('div');
+  content.id='appsAppInner';
+  content.style.overflowY='auto';
+  content.innerHTML='<h2 style="color:#fff;margin-bottom:10px">Apps Library</h2>';
+
+  const installed = JSON.parse(localStorage.getItem('desktopApps')||'[]');
+
+  allApps.forEach(app=>{
+    const isInstalled = installed.some(x=>x.name===app.name);
+    const card=document.createElement('div');
+    card.className='game-card';
+    card.innerHTML = `
+      <img src="${app.img}">
+      <div class="game-info">
+        <h3>${app.name}</h3>
+        <p>${app.desc||''}</p>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button class="playBtn" style="display:${isInstalled?'inline-block':'none'}">Open</button>
+          <button class="installBtn">${isInstalled?'Installed':'Download'}</button>
+          <button class="deleteBtn" style="display:${isInstalled?'inline-block':'none'};background:#ff605c">Delete</button>
+        </div>
+        <div class="downloadBar" style="height:6px;width:0%;background:#1e90ff;margin-top:6px;border-radius:3px;transition:width 0.3s;"></div>
+      </div>
+    `;
+    const playBtn = card.querySelector('.playBtn');
+    const installBtn = card.querySelector('.installBtn');
+    const deleteBtn = card.querySelector('.deleteBtn');
+    const downloadBar = card.querySelector('.downloadBar');
+
+    playBtn.onclick=(e)=>{ e.stopPropagation(); openGameWindow(app); };
+
+    installBtn.onclick=(e)=>{
+      e.stopPropagation();
+      if(!isInstalled){
+        installBtn.disabled=true;
+        let progress=0;
+        const interval=setInterval(()=>{
+          progress+=Math.random()*20;
+          if(progress>=100){ progress=100; clearInterval(interval);
+            let installedApps = JSON.parse(localStorage.getItem('desktopApps')||'[]');
+            installedApps.push(app);
+            localStorage.setItem('desktopApps',JSON.stringify(installedApps));
+            installBtn.textContent='Installed'; installBtn.disabled=false;
+            playBtn.style.display='inline-block'; deleteBtn.style.display='inline-block';
+          }
+          downloadBar.style.width = progress + '%';
+        },300);
+      }
+    };
+
+    deleteBtn.onclick=(e)=>{
+      e.stopPropagation();
+      if(confirm('Delete this app from desktop?')){
+        let installedApps = JSON.parse(localStorage.getItem('desktopApps')||'[]');
+        installedApps = installedApps.filter(x=>x.name!==app.name);
+        localStorage.setItem('desktopApps',JSON.stringify(installedApps));
+        card.remove();
+      }
+    };
 
     content.appendChild(card);
   });
 
-  openWindow(
-    { title: 'Games', icon: 'https://cdn-icons-png.flaticon.com/512/1055/1055646.png' },
-    content
-  );
+  openWindow({title:'Apps',icon:'https://cdn-icons-png.flaticon.com/512/1055/1055646.png'},content);
 }
 
-/* delete game */
-/* delete game */
-function deleteGame(name) {
-  // Remove from localStorage
-  let installed = JSON.parse(localStorage.getItem('desktopGames') || '[]');
-  installed = installed.filter(g => g.name !== name);
-  localStorage.setItem('desktopGames', JSON.stringify(installed));
-
-  // Remove from desktop icons
-  document.querySelectorAll('#desktop .app').forEach(app => {
-    if (app.querySelector('div').textContent === name) {
-      app.remove();
-    }
-  });
-
-  // Remove from dock if it's open
-  removeDockIcon(slug(name));
+// ------------- OPEN GAME/APP WINDOW -------------
+function openGameWindow(item){
+  const content=document.createElement('iframe');
+  content.src=item.file;
+  content.style.width='100%';
+  content.style.height='100%';
+  content.style.border='none';
+  openWindow({title:item.name,icon:item.img},content);
 }
 
-
-/* settings */
-function openSettingsApp(){
-  const content=document.createElement('div');
-  const currentName=localStorage.getItem('deviceName')||'';const currentAvatar=localStorage.getItem('avatarURL')||'';
-  content.innerHTML=`<h2 style="color:#fff">Settings</h2>
-    <div style="margin-top:10px;color:#ddd">Device name</div>
-    <input id="settingsName" style="width:100%;padding:8px;margin-top:6px;border-radius:8px;border:none;background:#0b0b0b;color:#fff" value="${currentName}">
-    <div style="margin-top:10px;color:#ddd">Avatar URL</div>
-    <input id="settingsAvatar" style="width:100%;padding:8px;margin-top:6px;border-radius:8px;border:none;background:#0b0b0b;color:#fff" value="${currentAvatar}">
-    <div style="margin-top:10px;color:#ddd">Wallpaper</div><div id="settingsGradients" style="display:flex;flex-wrap:wrap;margin-top:8px"></div>
-    <div style="margin-top:12px"><button id="saveSettingsBtn" style="padding:8px 12px;border-radius:8px;border:none;background:#1e90ff;color:#fff">Save</button></div>`;
-  const mg=content.querySelector('#settingsGradients');
-  gradients.forEach(g=>{const o=document.createElement('div');o.className='gradient-option';o.style.background=g;
-    o.onclick=()=>{chosenGradient=g;document.querySelectorAll('#settingsGradients .gradient-option').forEach(x=>x.style.border='2px solid rgba(255,255,255,0.12)');o.style.border='4px solid #ffd54a';};
-    mg.appendChild(o);});
-  openWindow({title:'Settings',icon:'https://cdn-icons-png.flaticon.com/512/3524/3524659.png'},content);
-  content.querySelector('#saveSettingsBtn').onclick=()=>{const name=content.querySelector('#settingsName').value||'Really Unbl0ck3d';const avatar=content.querySelector('#settingsAvatar').value||'https://cdn-icons-png.flaticon.com/512/1055/1055646.png';
-    localStorage.setItem('deviceName',name);localStorage.setItem('avatarURL',avatar);localStorage.setItem('wallpaper',chosenGradient);
-    taskDeviceName.textContent=name;taskAvatar.src=avatar;desktop.style.background=chosenGradient;alert('Settings saved.');};
+// ------------- INIT -------------
+if(localStorage.getItem('deviceName')){
+  setupModal.style.display='none';
+  initDesktop();
 }
-
-/* credits */
-function openCreditsApp(){
-  const content=document.createElement('div');content.style.color="#fff";content.style.padding="20px";content.innerHTML=`
-    <h2>REALLY UNBL0CK3D CREDITS</h2>
-    <p>OWNER - LUKAS</p><p>HELPER - PAXTAN</p><p>POOKIES - NICK, SETH, PARKER</p>`;
-  openWindow({title:'Credits',icon:'https://cdn-icons-png.flaticon.com/512/1828/1828884.png'},content);
-}
-
-/* open game window */
-function openGameWindow(g){
-  const iframe=document.createElement('iframe');iframe.src=g.file;iframe.style.width='100%';iframe.style.height='100%';iframe.style.border='none';
-  openWindow({title:g.name,icon:g.img},iframe);
-}
-
-/* install game */
-function installGame(g){
-  let installed=JSON.parse(localStorage.getItem('desktopGames')||'[]');
-  installed.push(g);
-  localStorage.setItem('desktopGames',JSON.stringify(installed));
-  addApp({id:'game-'+slug(g.name),name:g.name,img:g.img,file:g.file},()=>openGameWindow(g));
-}
-
-/* window system */
-function openWindow(meta,content){
-  const id=slug(meta.title)+'-'+Date.now();
-  const win=document.createElement('div');
-  win.className='window';
-  win.innerHTML=`<div class="window-header"><div class="window-left">
-  <div class="circle c-close"></div><div class="circle c-min"></div><div class="circle c-max"></div>
-  <div class="window-title">${meta.title}</div></div></div><div class="window-content"></div><div class="resizer"></div>`;
-  win.querySelector('.window-content').appendChild(content);desktop.appendChild(win);
-  addDockIcon(slug(meta.title),meta.title,meta.icon,id);
-  win.style.display='flex';win.style.top=(100+Math.random()*60)+'px';win.style.left=(100+Math.random()*60)+'px';
-  makeDraggable(win,win.querySelector('.window-header'));makeResizable(win,win.querySelector('.resizer'));win.style.zIndex=getMaxZIndex()+1;
-  openWindows[id]={el:win};
-  const[cclose,cmin,cmax]=win.querySelectorAll('.circle');
-  cclose.onclick=()=>{win.remove();removeDockIcon(slug(meta.title));delete openWindows[id];};
-  cmin.onclick=()=>{win.style.display='none';};
-  let max=false,orig={};cmax.onclick=()=>{if(!max){orig={t:win.offsetTop,l:win.offsetLeft,w:win.offsetWidth,h:win.offsetHeight};
-    win.style.top='0';win.style.left='0';win.style.width='100%';win.style.height='100%';max=true;}
-    else{win.style.top=orig.t+'px';win.style.left=orig.l+'px';win.style.width=orig.w+'px';win.style.height=orig.h+'px';max=false;}};
-  return win;
-}
-
-/* draggable/resizable */
-function makeDraggable(e,h){let p1=0,p2=0,p3=0,p4=0;h.onmousedown=dmd;function dmd(ev){ev.preventDefault();p3=ev.clientX;p4=ev.clientY;document.onmouseup=cd;document.onmousemove=md;e.style.zIndex=getMaxZIndex()+1;}
-function md(ev){ev.preventDefault();p1=p3-ev.clientX;p2=p4-ev.clientY;p3=ev.clientX;p4=ev.clientY;e.style.top=(e.offsetTop-p2)+'px';e.style.left=(e.offsetLeft-p1)+'px';}
-function cd(){document.onmouseup=null;document.onmousemove=null;}}
-function makeResizable(e,r){let sx=0,sy=0,sw=0,sh=0;r.onmousedown=function(ev){ev.preventDefault();sx=ev.clientX;sy=ev.clientY;sw=e.offsetWidth;sh=e.offsetHeight;document.onmouseup=st;document.onmousemove=rs;};
-function rs(ev){e.style.width=(sw+(ev.clientX-sx))+'px';e.style.height=(sh+(ev.clientY-sy))+'px';}
-function st(){document.onmouseup=null;document.onmousemove=null;}}
-function getMaxZIndex(){let m=0;document.querySelectorAll('.window').forEach(w=>{const z=parseInt(getComputedStyle(w).zIndex)||1;if(z>m)m=z;});return m;}
-function slug(s){return s.toLowerCase().replace(/[^a-z0-9]+/g,'-');}
 </script>
 </body>
 </html>
