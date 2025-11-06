@@ -161,28 +161,82 @@ function addDockIcon(id,title,icon,winId){
 function removeDockIcon(id){if(!dockEntries[id])return;dockEntries[id].el.remove();delete dockEntries[id];}
 
 /* games app */
-const sampleGames=[{name:'Gladhoppers',desc:'Suggested By Seth.',img:'https://img.itch.zone/aW1nLzI1Mzk3MTkuanBn/original/T88HJe.jpg',file:'games/Gladhoppers.html'}];
+const allGames = [
+  {name:'SUGGESTIONS!!', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/596-uu.png', file:'games/COMMENTS.html'},
+  {name:'1v1.LoL', img:'https://tse1.mm.bing.net/th/id/OIP.jv6iR5gwlta2uwmJ-zoJmgHaHa?rs=1&pid=ImgDetMain&o=7&rm=3', file:'games/1v1.LoL.html', desc:'Battle it out one-on-one'},
+  {name:'2048 Merge Run', img:'https://th.bing.com/th/id/OIP.6fTgpyMudOUZtAeJRQ9GEwAAAA?w=147&h=158&c=7&r=0&o=7', file:'games/2048 Merge Run.html', desc:'Merge and run to win'},
+  {name:'Adventure Capitalist', img:'https://th.bing.com/th/id/OIP.cn1P453UfDub7AaFBRoO0gHaHa?w=181&h=182&c=7&r=0&o=7', file:'games/Adventure Capatalist.html', desc:'Become a tycoon'},
+  {name:'Basket Random', img:'https://th.bing.com/th/id/R.3279f70eec52d7b6c1a4e72021fe9b49?rik=U6kdaNpz86dnyw&pid=ImgRaw&r=0', file:'games/Basket Random.html', desc:'Shoot hoops'},
+  {name:'Boxing Random', img:'https://tse2.mm.bing.net/th/id/OIP.Rt480d2t4SEiajoVvPNxAwAAAA?rs=1&pid=ImgDetMain&o=7&rm=3', file:'games/Boxing Random.html', desc:'Fight for victory'},
+  {name:'Dadish 2', img:'https://th.bing.com/th/id/OIP.4zoJ1qn3b0m4BMN4WDqXpwHaHa?w=178&h=180&c=7&r=0&o=7', file:'games/Dadish 2.html', desc:'Slice through veggies'},
+  {name:'Dadish 3', img:'https://th.bing.com/th/id/OIP.qDULYJ66o1pvZ_X2W3PqXwHaHa?w=159&h=180&c=7&r=0&o=7', file:'games/Dadish 3.html', desc:'Dadish adventures continue'},
+  {name:'Dadish', img:'https://th.bing.com/th/id/OIP.dRhGIzN8Wnu1sQKYlyjoygHaHa?w=180&h=180&c=7&r=0&o=7', file:'games/Dadish.html', desc:'Original Dadish game'},
+  {name:'Daily Dadish', img:'https://th.bing.com/th/id/OIP.gX7YJ_JbsmnyTMy_ONrHxwHaHa?w=156&h=180&c=7&r=0&o=7', file:'games/Daily Dadish.html', desc:'Daily challenges'},
+  {name:'Death Run 3D', img:'https://play-lh.googleusercontent.com/dEu4Lrs5Ke5ZHDMedRkjjtYq1G22gGccxeIU_ZJNqqwLeSYshuUxBU0KCrSG7lEEwBo', file:'games/Death Run 3D.html', desc:'Run and survive'},
+  {name:'Dig Deep', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/32.png', file:'games/Dig Deep.html', desc:'Dig for treasure'},
+  {name:'Doge Miner', img:'https://th.bing.com/th/id/OIP.8qiNzyPViFpETptqypnL4AHaHa?w=167&h=180&c=7&r=0&o=7', file:'games/Doge Miner.html', desc:'Mine with Doge'},
+  {name:'Escape Road', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/264.png', file:'games/Escape Road.html', desc:'Avoid obstacles'},
+  {name:'Flip Master', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/392.png', file:'games/Flip Master.html', desc:'Flipping fun'},
+  {name:'Getting Over It with Bennett Foddy', img:'https://th.bing.com/th/id/OIP.DoF8lVpkK92j9OnNye__rQHaEK?w=313&h=180&c=7&r=0&o=7', file:'games/Getting Over It with Bennett Foddy.html', desc:'Climb impossible mountains'},
+  {name:'Monkey Mart', img:'https://th.bing.com/th/id/OIP.GmKIjCrlse8QXE9EB8175gHaHa?w=180&h=180&c=7&r=0&o=7', file:'games/MonkeyMart.html', desc:'Shopping madness'},
+  {name:'Pac-Man Superfast', img:'https://th.bing.com/th/id/OIP.WYvgl82DmC7P4Pdyf2KddQHaEK?w=288&h=180&c=7&r=0&o=7', file:'games/Pac-Man Superfast.html', desc:'Classic Pac-Man, faster'},
+  {name:'Ragdoll Archers', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/186.png', file:'games/Ragdoll Archers.html', desc:'Archery with ragdolls'},
+  {name:'Retro Bowl', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/33.png', file:'games/Retro Bowl.html', desc:'Football retro style'},
+  {name:'Slope 2', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/368.png', file:'games/Slope 2.html', desc:'Rolling fun down the slope'},
+  {name:'Solar Sandbox', img:'https://solarsmash.co/data/image/game/solar-sandbox/solar-sandbox.jpg', file:'games/SolarSandbox.html', desc:'Play with planets'},
+  {name:'Twerk Race 3D', img:'https://th.bing.com/th/id/OIP.tAYNPAIEKwy5Eb_3qw-ckQHaHa?w=187&h=187&c=7&r=0&o=7', file:'games/Twerk Race 3D.html', desc:'Fun 3D race'},
+  {name:'Wordle', img:'https://th.bing.com/th/id/OIP.NhkcU9EZ3tvwdVo6db0bgAHaHa?w=173&h=180&c=7&r=0&o=7', file:'games/Wordle.html', desc:'Guess the word'},
+  {name:'Core Ball', img:'https://th.bing.com/th/id/OIP.pSaFRh5UZ-PZi9oqxGDZfgHaFj?w=213&h=180&c=7&r=0&o=7', file:'games/coreball.html', desc:'Bounce the ball'},
+  {name:'Crazy Cars', img:'https://th.bing.com/th/id/OIP.9Y7-6QtaVAYoyrFFjzUbIgHaHa?w=179&h=180&c=7&r=0&o=7', file:'games/crazycars.html', desc:'Drive crazy cars'},
+  {name:'Snow Rider 3D', img:'https://th.bing.com/th/id/OIP.HEucI3p7n0YYCVzhNm_VxgAAAA?w=152&h=180&c=7&r=0&o=7', file:'games/snowrider.html', desc:'Ride the snowy slopes'},
+  {name:'Madden 64', img:'https://tse3.mm.bing.net/th/id/OIP.5zkP8SuHwTsaqw902v9MMgHaFI?w=264&h=182&c=7&r=0&o=7', file:'games/madden64.html', desc:'Football retro'},
+  {name:'Traffic Jam 3D', img:'https://th.bing.com/th/id/OIP.B4Z_VL6Af0CDW_fsd6XEJQHaDt?w=327&h=174&c=7&r=0&o=7', file:'games/trafficjam3d.html', desc:'Navigate traffic'},
+  {name:'Shrek 2', img:'https://tse2.mm.bing.net/th/id/OIP.7QbssIaRBRko9p_g6GPaKQHaHa?w=166&h=180&c=7&r=0&o=7', file:'games/shrek2.html', desc:'Shrek adventure'},
+  {name:'Growden.io', img:'https://tse3.mm.bing.net/th/id/OIP.YPqwQpuLpH9jWJLIHyFPigHaEK?rs=1&pid=ImgDetMain&o=7&rm=3', file:'games/Growden.io.html', desc:'Grow and survive'},
+  {name:'99 Nights In A Forest', img:'https://th.bing.com/th/id/OIP.A75lKs2UsoiL7GAEofMIAwHaEK?w=309&h=180&c=7&r=0&o=7', file:'games/99Nights.html', desc:'Survive 99 nights'},
+  {name:'Capybara Clicker', img:'https://th.bing.com/th/id/OIP._yNwNBn69lZ6ZRdEB6BPIAHaD4?w=312&h=200&c=12&rs=1&o=6&pid=23.1', file:'games/capybaraclicker.html', desc:'Click the capybaras'},
+  {name:'Granny ONLINE', img:'https://th.bing.com/th/id/OIP.GIeeOy3l0WRqKRsOQxOMeQHaD4?w=327&h=180&c=7&r=0&o=7', file:'games/GrannyOnline.html', desc:'Online horror fun'},
+  {name:'Subway Surfers Miami', img:'https://th.bing.com/th/id/OIP.3R42Bb5kvmhye2v7dmprswHaEK?w=287&h=180&c=7&r=0&o=7', file:'games/SubwayMiami.html', desc:'Run in Miami'},
+  {name:'Bank Robbery 2', img:'https://th.bing.com/th/id/OIP.mrcQ0lI2QeiWcvI-KKajWgHaHa?w=172&h=180&c=7&r=0&o=7', file:'games/BankRobbery2.html', desc:'Plan and rob'},
+  {name:'People Playground', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/194.png', file:'games/PeoplePlayground.html', desc:'Mess with physics'},
+  {name:'Tomb Of The Mask', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/109.png', file:'games/Tomb.html', desc:'Maze arcade action'},
+  {name:'Brawl Guys.io', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/121.png', file:'games/BrawlGuys.io.html', desc:'Battle royale fun'},
+  {name:'Kindergarten 1', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/445.png', file:'games/Kindergarten.html', desc:'Kindergarten adventures'},
+  {name:'Kindergarten 2', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/446.png', file:'games/Kindergarten2.html', desc:'More kindergarten madness'},
+  {name:'Sonic.Exe', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/606.png', file:'games/EXE.html', desc:'Horror Sonic'},
+  {name:'Duck Life', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/234.png', file:'games/DuckLife.html', desc:'Train your ducks'},
+  {name:'BaseBall Bros (requested by Braydin)', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/547.png', file:'games/clbaseballbros.html', desc:'Play baseball with friends'},
+  {name:'Football Bros', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/548.png', file:'games/FootballBros.html', desc:'Football with friends'},
+  {name:'Drive Mad (Requested By Jax)', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/35.png', file:'games/cldrivemady.html', desc:'Drive mad cars'},
+  {name:'Cookie Clicker', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/82.png', file:'games/Cookie Clicker.html', desc:'Click cookies'},
+  {name:'Cluster Rush', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/81.png', file:'games/Cluster Rush.html', desc:'Cluster chaos'},
+  {name:'Hypper Sandbox', img:'https://cdn.jsdelivr.net/gh/gn-math/covers@main/551.png', file:'games/Hypper Sandbox.html', desc:'Sandbox fun'},
+  {name:'Infinite Craft', img:'https://i.imgur.com/o2BTJsW.png', file:'games/clinfinitecraft.html', desc:'Infinite building'},
+  {name:'Halloween Fnaf 4', img:'https://i.imgur.com/9qfpGPz.jpeg', file:'games/clfnafhalloween423.html', desc:'Spooky Fnaf'},
+  {name:'Skibidi.io', img:'https://i.imgur.com/hitsfyx.jpeg', file:'games/skib.html', desc:'Skibidi fun'},
+  {name:'Plants Vs Zombies Gardenless', img:'https://i.imgur.com/Yv0chjN.jpeg', file:'games/pvz2.html', desc:'Classic PvZ'},
+  {name: 'Gladhoppers', img: 'https://img.itch.zone/aW1nLzI1Mzk3MTkuanBn/original/T88HJe.jpg', file: 'games/Gladhoppers.html', desc: 'Suggested by Seth.'},
+
+];
+
 function openGamesApp(){
-  const content=document.createElement('div');content.id='gamesAppInner';content.innerHTML='<h2 style="color:#fff;margin-bottom:10px">Games Library</h2>';
-  const installed=JSON.parse(localStorage.getItem('desktopGames')||'[]');
-  sampleGames.forEach(g=>{
-    const isInstalled=installed.some(x=>x.name===g.name);
-    const card=document.createElement('div');card.className='game-card';
-    card.innerHTML=`<img src="${g.img}"><div class="game-info"><div><h3>${g.name}</h3><p>${g.desc}</p></div>
-    <div style="display:flex;gap:8px">
-      <button class="playBtn" style="display:${isInstalled?'inline-block':'none'}">Open</button>
-      <button class="installBtn">${isInstalled?'Installed':'Download'}</button>
-      <button class="deleteBtn" style="display:${isInstalled?'inline-block':'none'};background:#ff605c">Delete</button>
-    </div></div>`;
-    const playBtn=card.querySelector('.playBtn');
-    const installBtn=card.querySelector('.installBtn');
-    const deleteBtn=card.querySelector('.deleteBtn');
-    playBtn.onclick=()=>openGameWindow(g);
-    installBtn.onclick=()=>{if(!isInstalled){installGame(g);playBtn.style.display='inline-block';installBtn.textContent='Installed';deleteBtn.style.display='inline-block';}};
-    deleteBtn.onclick=()=>{if(confirm('Delete this game from desktop?')){deleteGame(g.name);card.remove();}};
+  const content=document.createElement('div');
+  content.id='gamesAppInner';
+  content.innerHTML='<h2 style="color:#fff;margin-bottom:10px">Games Library</h2>';
+  
+  allGames.forEach(g=>{
+    const card=document.createElement('div');
+    card.className='game-card';
+    card.innerHTML = `
+      <img src="${g.img}">
+      <div class="game-info">
+        <h3>${g.name}</h3>
+      </div>`;
+    card.onclick = () => openGameWindow(g);
     content.appendChild(card);
   });
-  openWindow({title:'Games',icon:'https://cdn-icons-png.flaticon.com/512/1055/1055646.png'},content);
+
+  openWindow({title:'Games', icon:'https://cdn-icons-png.flaticon.com/512/1055/1055646.png'}, content);
 }
 
 /* delete game */
