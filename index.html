@@ -1,263 +1,505 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Really Unbl0ck3d</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Really Unbl0ck3d OS</title>
 <style>
-/* Reset */
-* { margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; user-select:none; }
-html,body { width:100%; height:100%; overflow:hidden; }
+/* Reset & base */
+*{box-sizing:border-box;margin:0;padding:0;font-family:Inter, Arial, sans-serif;user-select:none}
+html,body{height:100%;width:100%;overflow:hidden}
+body{background:#111}
 
-/* Setup Wizard */
-#setupModal { 
-  position:fixed; top:0; left:0; width:100%; height:100%; 
-  background: linear-gradient(to bottom, #000000, #444444); 
-  display:flex; flex-direction:column; justify-content:center; align-items:center; 
-  z-index:10000; color:white; text-align:center;
+/* Setup modal */
+#setupModal{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(180deg,#000,#444);z-index:9999;color:#fff;
 }
-#setupModal input, #setupModal select, #setupModal button { 
-  margin:10px; padding:12px; font-size:1em; border-radius:8px; border:none; width:250px;
-}
-#setupModal button { background:#1e90ff; color:white; cursor:pointer; font-weight:bold; }
-#setupModal h2 { margin-bottom:20px; }
+.setup-card{width:360px;padding:22px;border-radius:12px;background:rgba(255,255,255,0.03);box-shadow:0 10px 30px rgba(0,0,0,0.6);text-align:center}
+.setup-card h2{margin-bottom:12px;font-size:20px}
+.setup-card input{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;background:rgba(255,255,255,0.03);color:#fff}
+.setup-card .gradients{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:10px 0}
+.gradient-option{width:96px;height:64px;border-radius:8px;border:2px solid rgba(255,255,255,0.12);cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.4)}
+.setup-card button{margin-top:10px;padding:10px 14px;border-radius:8px;border:none;background:#1e90ff;color:#fff;font-weight:600;cursor:pointer}
 
 /* Desktop */
-#desktop { position:relative; width:100%; height:100%; padding:20px; background-size:cover; background-position:center; overflow:hidden; }
+#desktop{position:relative;width:100%;height:100%;background-size:cover;background-position:center;overflow:hidden;padding:18px;padding-bottom:84px}
 
-/* Desktop icons */
-.app { width:80px; text-align:center; cursor:pointer; margin:10px; display:inline-block; }
-.app img { width:64px; height:64px; display:block; margin:0 auto 5px; }
+/* App icons */
+.app{width:80px;text-align:center;cursor:pointer;margin:10px;display:inline-block}
+.app img{width:64px;height:64px;display:block;margin:0 auto 6px;border-radius:10px}
+.app div{color:#fff;font-size:12px;text-align:center;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* Games App Window */
-#gamesApp { display:none; position:absolute; top:50px; left:50px; width:80%; height:80%; background:rgba(0,0,0,0.95); border-radius:12px; overflow-y:auto; padding:20px; color:white; box-shadow:0 0 30px rgba(0,0,0,0.8); }
-.game-card { display:flex; background:#222; border-radius:10px; margin-bottom:15px; overflow:hidden; }
-.game-card img { width:120px; height:100px; object-fit:cover; }
-.game-info { flex:1; padding:10px; display:flex; flex-direction:column; justify-content:space-between; }
-.game-info h3 { margin-bottom:5px; font-size:1.1em; }
-.game-info p { font-size:0.9em; margin-bottom:10px; }
-.game-info button { background:#1e90ff; border:none; color:white; padding:5px; cursor:pointer; border-radius:5px; transition:0.2s; }
-.game-info button:hover { background:#1c86ee; }
+/* Window */
+.window{
+  position:absolute;width:720px;height:520px;background:#0f1113;border-radius:12px;display:none;flex-direction:column;
+  box-shadow:0 20px 60px rgba(0,0,0,0.7);overflow:hidden;border:1px solid rgba(255,255,255,0.03)
+}
+.window-header{
+  height:44px;background:linear-gradient(180deg,#2b2b2b,#222);display:flex;align-items:center;justify-content:space-between;padding:6px 12px;cursor:grab;
+  user-select:none
+}
+.window-left{display:flex;align-items:center;gap:8px}
+.window-title{color:#fff;font-weight:600;font-size:14px}
+.window-controls{display:flex;gap:8px;align-items:center}
+.circle{width:14px;height:14px;border-radius:50%;display:inline-block;cursor:pointer;box-shadow:0 1px 0 rgba(0,0,0,0.2)}
+.circle:hover{transform:scale(1.2)}
+.c-close{background:#ff605c}
+.c-min{background:#ffbd44}
+.c-max{background:#00ca4e}
+.window-content{flex:1;background:#0b0c0d;padding:0;overflow:hidden}
 
-/* Window styling */
-.window { position:absolute; width:600px; height:400px; background:#111; border-radius:12px; display:none; flex-direction:column; overflow:hidden; box-shadow:0 0 30px rgba(0,0,0,0.8); }
-.window-header { background:#333; padding:5px 10px; display:flex; align-items:center; justify-content:space-between; cursor:grab; border-top-left-radius:12px; border-top-right-radius:12px; }
-.window-title { font-weight:bold; color:white; user-select:none; }
-.window-controls { display:flex; gap:5px; }
-.window-controls div { width:15px; height:15px; border-radius:50%; cursor:pointer; transition:0.2s; }
-.window-controls div:hover { transform:scale(1.2); }
-.close { background:#ff605c; }
-.minimize { background:#ffbd44; }
-.maximize { background:#00ca4e; }
-.window-content { flex:1; background:#111; }
+/* resizer */
+.resizer{position:absolute;right:4px;bottom:4px;width:12px;height:12px;cursor:se-resize}
 
-/* Resizer */
-.resizer { width:12px; height:12px; background:transparent; position:absolute; right:0; bottom:0; cursor:se-resize; }
+/* Games list */
+#gamesAppInner{padding:14px}
+.game-card{display:flex;background:#111;border-radius:10px;margin-bottom:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
+.game-card img{width:140px;height:96px;object-fit:cover}
+.game-info{padding:10px;display:flex;flex-direction:column;justify-content:space-between}
+.game-info h3{color:#fff;margin-bottom:6px;font-size:15px}
+.game-info p{color:#cfcfcf;font-size:13px;margin-bottom:8px}
+.game-info button{align-self:flex-start;padding:8px 10px;border-radius:8px;border:none;background:#1e90ff;color:#fff;cursor:pointer}
 
-/* Iframe */
-iframe { width:100%; height:100%; border:none; }
+/* Taskbar (dock) */
+#taskbar{position:fixed;left:0;right:0;bottom:0;height:64px;background:linear-gradient(180deg,rgba(0,0,0,0.35),rgba(0,0,0,0.6));display:flex;align-items:center;justify-content:space-between;padding:8px 16px;backdrop-filter: blur(6px);z-index:9998}
+.task-left{display:flex;align-items:center;gap:12px}
+.avatar{width:44px;height:44px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,0.08)}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.device-name{color:#fff;font-weight:600}
+.dock-center{display:flex;align-items:center;gap:10px;min-width:240px;justify-content:center}
+.dock-item{width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);cursor:pointer;transition:transform .12s;overflow:hidden}
+.dock-item img{width:32px;height:32px}
+.dock-item.running{box-shadow:0 6px 18px rgba(0,0,0,0.6);transform:translateY(-6px)}
+.task-right{color:#fff;font-weight:600}
+
+/* small helpers */
+.hidden{display:none}
 </style>
 </head>
 <body>
 
-<!-- Setup Wizard -->
+<!-- Setup -->
 <div id="setupModal">
-  <h2>Welcome to Really Unbl0ck3d</h2>
-  <input type="text" id="deviceName" placeholder="Device Name" />
-  <input type="text" id="avatarURL" placeholder="Avatar URL" />
-  <select id="wallpaperSelect">
-    <option value="https://images.unsplash.com/photo-1542281286-9e0a16bb7366">Wallpaper 1</option>
-    <option value="https://images.unsplash.com/photo-1507525428034-b723cf961d3e">Wallpaper 2</option>
-    <option value="https://images.unsplash.com/photo-1519125323398-675f0ddb6308">Wallpaper 3</option>
-  </select>
-  <button onclick="finishSetup()">Finish Setup</button>
+  <div class="setup-card">
+    <h2>Welcome to Really Unbl0ck3d</h2>
+    <input id="deviceNameInput" placeholder="Device name (eg: My PC)" />
+    <input id="avatarInput" placeholder="Avatar URL (optional)" />
+    <h3 style="margin-top:8px">Pick a wallpaper</h3>
+    <div class="gradients" id="gradientChoices"></div>
+    <button id="finishBtn">Finish setup</button>
+  </div>
 </div>
 
+<!-- Desktop -->
 <div id="desktop"></div>
 
-<!-- Games App -->
-<div id="gamesApp">
-  <h2>Available Games</h2>
-  <div id="gamesList"></div>
-  <button onclick="closeGamesApp()">Close</button>
+<!-- Taskbar (dock) -->
+<div id="taskbar">
+  <div class="task-left">
+    <div class="avatar" id="taskAvatar"><img src="" alt="avatar"></div>
+    <div class="device-name" id="taskDeviceName">Really Unbl0ck3d</div>
+  </div>
+  <div class="dock-center" id="dockCenter"></div>
+  <div class="task-right" id="taskTime"></div>
 </div>
 
 <script>
-// ---------- DATA ----------
-const gamesData = [
-  { name: "Game 1", desc: "First game description", img: "https://via.placeholder.com/120x100.png?text=Game+1", file:"games/game1.html" },
-  { name: "Game 2", desc: "Second game description", img: "https://via.placeholder.com/120x100.png?text=Game+2", file:"games/game2.html" }
+/* ---------- state ---------- */
+const gradients = [
+  "linear-gradient(135deg,#1f4037,#99f2c8)",
+  "linear-gradient(135deg,#2b5876,#4e4376)",
+  "linear-gradient(135deg,#141e30,#243b55)",
+  "linear-gradient(135deg,#000428,#004e92)",
+  "linear-gradient(135deg,#42275a,#734b6d)",
+  "linear-gradient(135deg,#485563,#29323c)"
 ];
 
-const desktop = document.getElementById("desktop");
-const gamesList = document.getElementById("gamesList");
-const gamesApp = document.getElementById("gamesApp");
-const setupModal = document.getElementById("setupModal");
-const openWindows = {};
-let desktopGames = JSON.parse(localStorage.getItem("desktopGames")||"[]");
+const desktop = document.getElementById('desktop');
+const setupModal = document.getElementById('setupModal');
+const gradientChoices = document.getElementById('gradientChoices');
+const finishBtn = document.getElementById('finishBtn');
+const taskAvatar = document.getElementById('taskAvatar').querySelector('img');
+const taskDeviceName = document.getElementById('taskDeviceName');
+const dockCenter = document.getElementById('dockCenter');
+const taskTime = document.getElementById('taskTime');
 
-// ---------- SETUP ----------
-if(localStorage.getItem("deviceName")){ 
-  setupModal.style.display="none";
+let chosenGradient = gradients[0];
+let openWindows = {}; // winId -> {el, title, iconSrc}
+let dockEntries = {}; // appId -> {el, winId}
+
+/* ---------- populate gradient picker ---------- */
+function makeGradientOptions(){
+  gradientChoices.innerHTML = "";
+  gradients.forEach((g, i) => {
+    const d = document.createElement('div');
+    d.className = 'gradient-option';
+    d.style.background = g;
+    d.dataset.gradIndex = i;
+    if(i===0) d.style.border = "4px solid #ffd54a";
+    d.addEventListener('click', () => {
+      document.querySelectorAll('.gradient-option').forEach(x => x.style.border = '2px solid rgba(255,255,255,0.12)');
+      d.style.border = "4px solid #ffd54a";
+      chosenGradient = g;
+    });
+    gradientChoices.appendChild(d);
+  });
+}
+makeGradientOptions();
+
+/* ---------- setup finish ---------- */
+finishBtn.addEventListener('click', () => {
+  const name = document.getElementById('deviceNameInput').value || "Really Unbl0ck3d";
+  const avatar = document.getElementById('avatarInput').value || "https://cdn-icons-png.flaticon.com/512/1055/1055646.png";
+  localStorage.setItem('deviceName', name);
+  localStorage.setItem('avatarURL', avatar);
+  localStorage.setItem('wallpaper', chosenGradient);
+  setupModal.style.display = 'none';
+  initDesktop();
+});
+
+/* ---------- init if already set ---------- */
+if(localStorage.getItem('deviceName')) {
+  setupModal.style.display = 'none';
   initDesktop();
 }
 
-function finishSetup(){
-  const name = document.getElementById("deviceName").value||"My Device";
-  const avatar = document.getElementById("avatarURL").value||"https://cdn-icons-png.flaticon.com/512/1055/1055646.png";
-  const wallpaper = document.getElementById("wallpaperSelect").value;
-  localStorage.setItem("deviceName",name);
-  localStorage.setItem("avatarURL",avatar);
-  localStorage.setItem("wallpaper",wallpaper);
-  setupModal.style.display="none";
-  initDesktop();
+/* ---------- helper: update time ---------- */
+function updateTime(){
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  taskTime.textContent = `${hh}:${mm}`;
 }
+setInterval(updateTime, 1000);
+updateTime();
 
-// ---------- DESKTOP ----------
+/* ---------- desktop/apps ---------- */
 function initDesktop(){
-  const wallpaper = localStorage.getItem("wallpaper");
-  desktop.style.backgroundImage = `url(${wallpaper})`;
-  desktopGames.forEach(g=>addDesktopGame(g));
-  renderGamesList();
-  addAppIcon({name:"Games", img:"https://cdn-icons-png.flaticon.com/512/1055/1055646.png"}, ()=>openGamesApp());
+  const wallpaper = localStorage.getItem('wallpaper') || chosenGradient;
+  desktop.style.background = wallpaper;
+  const avatarURL = localStorage.getItem('avatarURL') || "https://cdn-icons-png.flaticon.com/512/1055/1055646.png";
+  const deviceName = localStorage.getItem('deviceName') || "Really Unbl0ck3d";
+  taskAvatar.src = avatarURL;
+  taskDeviceName.textContent = deviceName;
+
+  // add core apps: Games, Settings
+  addAppToDesktop({id:'app-games', name:'Games', img:'https://cdn-icons-png.flaticon.com/512/1055/1055646.png'}, openGamesApp);
+  addAppToDesktop({id:'app-settings', name:'Settings', img:'https://cdn-icons-png.flaticon.com/512/3524/3524659.png'}, openSettingsApp);
+
+  // restore downloaded games (persisted)
+  const installed = JSON.parse(localStorage.getItem('desktopGames') || '[]');
+  installed.forEach(g => addAppToDesktop({id: 'game-' + slug(g.name), name: g.name, img: g.img, file: g.file}, () => openGameWindow(g)));
 }
 
-// ---------- GAMES APP ----------
-function renderGamesList(){
-  gamesList.innerHTML="";
-  gamesData.forEach(game=>{
-    const card=document.createElement("div");
-    card.className="game-card";
-    card.innerHTML=`<img src="${game.img}" alt="${game.name}">
-      <div class="game-info"><h3>${game.name}</h3><p>${game.desc}</p>
-      <button onclick="downloadGame('${game.name}')">Download</button></div>`;
-    gamesList.appendChild(card);
-  });
+/* add app icon on desktop */
+function addAppToDesktop(appMeta, onClick){
+  const el = document.createElement('div');
+  el.className = 'app';
+  el.innerHTML = `<img src="${appMeta.img}" alt="${appMeta.name}"><div>${appMeta.name}</div>`;
+  el.addEventListener('click', onClick);
+  desktop.appendChild(el);
 }
 
-function openGamesApp(){ gamesApp.style.display="block"; }
-function closeGamesApp(){ gamesApp.style.display="none"; }
-
-function downloadGame(name){
-  const game = gamesData.find(g=>g.name===name);
-  if(!desktopGames.some(g=>g.name===name)){
-    desktopGames.push(game);
-    localStorage.setItem("desktopGames",JSON.stringify(desktopGames));
-    addDesktopGame(game);
+/* ---------- dock management ---------- */
+function addDockIcon(appId, title, iconSrc, winId){
+  // if icon exists, mark running & attach winId
+  if(dockEntries[appId]){
+    const entry = dockEntries[appId];
+    entry.winId = winId || entry.winId;
+    entry.el.classList.add('running');
+    return;
   }
-}
-
-// ---------- DESKTOP ICONS ----------
-function addDesktopGame(game){
-  addAppIcon(game, ()=>openGameWindow(game));
-}
-
-function addAppIcon(game, onClick){
-  const app=document.createElement("div");
-  app.className="app";
-  app.innerHTML=`<img src="${game.img}" alt="${game.name}"><div>${game.name}</div>`;
-  app.addEventListener("click",()=>{
-    if(openWindows[game.name]){
-      const w=openWindows[game.name];
-      w.style.display="flex"; 
-      w.style.zIndex=getMaxZIndex()+1; 
-    } else { onClick(); }
-  });
-  desktop.appendChild(app);
-}
-
-// ---------- WINDOWS ----------
-function openGameWindow(game){
-  const win=document.createElement("div");
-  win.className="window";
-  win.style.top=Math.random()*200+"px";
-  win.style.left=Math.random()*200+"px";
-  win.style.zIndex=getMaxZIndex()+1;
-  win.innerHTML=`<div class="window-header">
-    <span class="window-title">${game.name}</span>
-    <div class="window-controls">
-      <div class="close"></div><div class="minimize"></div><div class="maximize"></div>
-    </div>
-  </div>
-  <div class="window-content"><iframe src="${game.file}"></iframe></div>
-  <div class="resizer"></div>`;
-  desktop.appendChild(win);
-  openWindows[game.name]=win;
-
-  const header=win.querySelector(".window-header");
-  const closeBtn=win.querySelector(".close");
-  const minimizeBtn=win.querySelector(".minimize");
-  const maximizeBtn=win.querySelector(".maximize");
-  const resizer=win.querySelector(".resizer");
-  let maximized=false;
-  let original={};
-
-  closeBtn.onclick=()=>{ win.remove(); delete openWindows[game.name]; };
-  minimizeBtn.onclick=()=>win.style.display="none";
-  maximizeBtn.onclick=()=>{
-    if(!maximized){ 
-      original={top:win.offsetTop,left:win.offsetLeft,width:win.offsetWidth,height:win.offsetHeight};
-      win.style.top="0px"; win.style.left="0px"; win.style.width="100%"; win.style.height="100%"; 
-      maximized=true; 
-    } else { 
-      win.style.top=original.top+"px"; win.style.left=original.left+"px"; 
-      win.style.width=original.width+"px"; win.style.height=original.height+"px"; 
-      maximized=false; 
+  const el = document.createElement('div');
+  el.className = 'dock-item running';
+  el.innerHTML = `<img src="${iconSrc}" alt="${title}" title="${title}">`;
+  el.addEventListener('click', () => {
+    // toggle restore/minimize
+    const entry = dockEntries[appId];
+    if(!entry) return;
+    const win = openWindows[entry.winId]?.el;
+    if(!win) return;
+    if(win.style.display === 'none') {
+      win.style.display = 'flex';
+      win.style.zIndex = getMaxZIndex() + 1;
+    } else {
+      // minimize
+      win.style.display = 'none';
     }
-  };
-
-  makeDraggable(win,header);
-  makeResizable(win,resizer);
-  win.style.display="flex";
-}
-
-// ---------- DRAG ----------
-function makeDraggable(elmnt,header){
-  let pos1=0,pos2=0,pos3=0,pos4=0;
-  header.onmousedown=dragMouseDown;
-  function dragMouseDown(e){
-    e.preventDefault();
-    pos3=e.clientX; pos4=e.clientY;
-    document.onmouseup=closeDrag;
-    document.onmousemove=elementDrag;
-  }
-  function elementDrag(e){
-    e.preventDefault();
-    pos1=pos3-e.clientX; pos2=pos4-e.clientY;
-    pos3=e.clientX; pos4=e.clientY;
-    elmnt.style.top=(elmnt.offsetTop-pos2)+"px";
-    elmnt.style.left=(elmnt.offsetLeft-pos1)+"px";
-    elmnt.style.zIndex=getMaxZIndex()+1;
-  }
-  function closeDrag(){ document.onmouseup=null; document.onmousemove=null; }
-}
-
-// ---------- RESIZE ----------
-function makeResizable(elmnt,resizer){
-  let startX=0,startY=0,startWidth=0,startHeight=0;
-  resizer.addEventListener("mousedown",function(e){
-    e.preventDefault();
-    startX=e.clientX; startY=e.clientY;
-    startWidth=elmnt.offsetWidth; startHeight=elmnt.offsetHeight;
-    document.documentElement.addEventListener("mousemove",resize);
-    document.documentElement.addEventListener("mouseup",stopResize);
   });
-  function resize(e){
-    elmnt.style.width=(startWidth+(e.clientX-startX))+"px";
-    elmnt.style.height=(startHeight+(e.clientY-startY))+"px";
-  }
-  function stopResize(){
-    document.documentElement.removeEventListener("mousemove",resize);
-    document.documentElement.removeEventListener("mouseup",stopResize);
-  }
+  dockCenter.appendChild(el);
+  dockEntries[appId] = {el, winId};
 }
 
-// ---------- Z-INDEX ----------
+function removeDockIcon(appId){
+  if(!dockEntries[appId]) return;
+  const entry = dockEntries[appId];
+  entry.el.remove();
+  delete dockEntries[appId];
+}
+
+/* ---------- Utils ---------- */
+function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-'); }
 function getMaxZIndex(){
-  let max=0;
-  document.querySelectorAll(".window").forEach(w=>{const z=parseInt(window.getComputedStyle(w).zIndex)||1;if(z>max) max=z;});
+  let max = 0;
+  document.querySelectorAll('.window').forEach(w => {
+    const z = parseInt(window.getComputedStyle(w).zIndex) || 1;
+    if(z > max) max = z;
+  });
   return max;
 }
+
+/* ---------- Apps: Games & Settings ---------- */
+const sampleGames = [
+  {name:'Astro Jump', desc:'A fast platformer.', img:'https://via.placeholder.com/140x96?text=Astro', file:'games/game1.html'},
+  {name:'Maze Runner', desc:'Find the exit.', img:'https://via.placeholder.com/140x96?text=Maze', file:'games/game2.html'}
+];
+
+function openGamesApp(){
+  const content = document.createElement('div');
+  content.id = 'gamesAppInner';
+  content.innerHTML = `<h2 style="color:#fff;margin-bottom:10px">Games Library</h2>`;
+  sampleGames.forEach(g=>{
+    const card = document.createElement('div');
+    card.className = 'game-card';
+    card.innerHTML = `<img src="${g.img}" alt="${g.name}"><div class="game-info"><div><h3>${g.name}</h3><p>${g.desc}</p></div><div style="display:flex;gap:8px"><button class="playBtn">Open</button><button class="installBtn">Download</button></div></div>`;
+    card.querySelector('.playBtn').onclick = () => openGameWindow(g);
+    card.querySelector('.installBtn').onclick = () => installGame(g);
+    content.appendChild(card);
+  });
+  openWindow({title:'Games', icon:'https://cdn-icons-png.flaticon.com/512/1055/1055646.png'}, content);
+}
+
+function openSettingsApp(){
+  const content = document.createElement('div');
+  content.className = 'settings-content';
+  const currentName = localStorage.getItem('deviceName') || '';
+  const currentAvatar = localStorage.getItem('avatarURL') || '';
+  content.innerHTML = `
+    <h2 style="color:#fff">Settings</h2>
+    <div style="margin-top:10px;color:#ddd">Device name</div>
+    <input id="settingsName" style="width:100%;padding:8px;margin-top:6px;border-radius:8px;border:none;background:#0b0b0b;color:#fff" value="${currentName}">
+    <div style="margin-top:10px;color:#ddd">Avatar URL</div>
+    <input id="settingsAvatar" style="width:100%;padding:8px;margin-top:6px;border-radius:8px;border:none;background:#0b0b0b;color:#fff" value="${currentAvatar}">
+    <div style="margin-top:10px;color:#ddd">Wallpaper</div>
+    <div id="settingsGradients" style="display:flex;flex-wrap:wrap;margin-top:8px"></div>
+    <div style="margin-top:12px"><button id="saveSettingsBtn" style="padding:8px 12px;border-radius:8px;border:none;background:#1e90ff;color:#fff">Save</button></div>
+  `;
+  const mg = content.querySelector('#settingsGradients');
+  gradients.forEach((g, idx) => {
+    const o = document.createElement('div');
+    o.className = 'gradient-option';
+    o.style.background = g;
+    o.addEventListener('click', () => {
+      chosenGradient = g;
+      document.querySelectorAll('#settingsGradients .gradient-option').forEach(x => x.style.border = '2px solid rgba(255,255,255,0.12)');
+      o.style.border = '4px solid #ffd54a';
+    });
+    mg.appendChild(o);
+  });
+  // mark current
+  document.querySelectorAll('#settingsGradients .gradient-option').forEach(x => x.style.border = '2px solid rgba(255,255,255,0.12)');
+  // open window
+  const winMeta = {title:'Settings', icon:'https://cdn-icons-png.flaticon.com/512/3524/3524659.png'};
+  const win = openWindow(winMeta, content);
+  content.querySelector('#saveSettingsBtn').onclick = () => {
+    const name = content.querySelector('#settingsName').value || 'Really Unbl0ck3d';
+    const avatar = content.querySelector('#settingsAvatar').value || 'https://cdn-icons-png.flaticon.com/512/1055/1055646.png';
+    localStorage.setItem('deviceName', name);
+    localStorage.setItem('avatarURL', avatar);
+    localStorage.setItem('wallpaper', chosenGradient);
+    taskDeviceName.textContent = name;
+    taskAvatar.src = avatar;
+    desktop.style.background = chosenGradient;
+    alert('Settings saved.');
+  };
+}
+
+/* install game (download) */
+function installGame(g){
+  const installed = JSON.parse(localStorage.getItem('desktopGames') || '[]');
+  if(!installed.some(x => x.name === g.name)){
+    installed.push(g);
+    localStorage.setItem('desktopGames', JSON.stringify(installed));
+    addAppToDesktop({id:'game-'+slug(g.name), name:g.name, img:g.img, file:g.file}, () => openGameWindow(g));
+    alert(`${g.name} added to desktop.`);
+  } else {
+    alert('Already installed.');
+  }
+}
+
+/* ---------- open generic window ---------- */
+/*
+  meta: {title, icon}
+  content: HTMLElement (or string)
+  returns winId
+*/
+function openWindow(meta, contentEl){
+  const id = 'win-' + Date.now() + '-' + Math.floor(Math.random()*1000);
+  const win = document.createElement('div');
+  win.className = 'window';
+  win.id = id;
+  win.style.top = (80 + Math.random()*120) + 'px';
+  win.style.left = (80 + Math.random()*120) + 'px';
+  win.style.zIndex = getMaxZIndex() + 1;
+
+  // header
+  const header = document.createElement('div');
+  header.className = 'window-header';
+  header.innerHTML = `<div class="window-left"><div style="display:flex;gap:8px;align-items:center"><div class="circle c-close"></div><div class="circle c-min"></div><div class="circle c-max"></div></div><div style="width:12px"></div><div class="window-title">${meta.title}</div></div><div class="window-controls"></div>`;
+  win.appendChild(header);
+
+  // content wrapper
+  const contentWrap = document.createElement('div');
+  contentWrap.className = 'window-content';
+  if(typeof contentEl === 'string') contentWrap.innerHTML = contentEl; else contentWrap.appendChild(contentEl);
+  win.appendChild(contentWrap);
+
+  // resizer
+  const resizer = document.createElement('div');
+  resizer.className = 'resizer';
+  win.appendChild(resizer);
+
+  desktop.appendChild(win);
+
+  // register
+  openWindows[id] = {el: win, title: meta.title, icon: meta.icon || meta.img || 'https://cdn-icons-png.flaticon.com/512/565/565547.png'};
+
+  // add dock icon (app id based on title)
+  addDockIcon('dock-' + slug(meta.title), meta.title, openWindows[id].icon, id);
+
+  // header buttons
+  const closeBtn = header.querySelector('.c-close');
+  const minBtn = header.querySelector('.c-min');
+  const maxBtn = header.querySelector('.c-max');
+
+  closeBtn.addEventListener('click', () => {
+    win.remove();
+    removeDockIcon('dock-' + slug(meta.title));
+    delete openWindows[id];
+  });
+  minBtn.addEventListener('click', () => {
+    win.style.display = 'none';
+  });
+  maxBtn.addEventListener('click', () => {
+    // toggle maximize
+    if(!win.dataset._maxed){
+      win.dataset._prev = JSON.stringify({top: win.offsetTop, left: win.offsetLeft, width: win.offsetWidth, height: win.offsetHeight});
+      win.style.top = '0px';
+      win.style.left = '0px';
+      win.style.width = '100%';
+      win.style.height = (window.innerHeight - 84) + 'px';
+      win.dataset._maxed = '1';
+    } else {
+      const prev = JSON.parse(win.dataset._prev || '{}');
+      win.style.top = prev.top + 'px';
+      win.style.left = prev.left + 'px';
+      win.style.width = prev.width + 'px';
+      win.style.height = prev.height + 'px';
+      delete win.dataset._maxed;
+      delete win.dataset._prev;
+    }
+  });
+
+  // drag & focus
+  makeDraggable(win, header);
+  makeResizable(win, resizer);
+
+  // clicking window brings to front
+  win.addEventListener('mousedown', () => win.style.zIndex = getMaxZIndex() + 1);
+
+  win.style.display = 'flex';
+  return id;
+}
+
+/* open a game window by metadata */
+function openGameWindow(g){
+  const meta = {title: g.name, icon: g.img};
+  const iframe = document.createElement('iframe');
+  iframe.src = g.file;
+  iframe.style.width = '100%';
+  iframe.style.height = '100%';
+  openWindow(meta, iframe);
+}
+
+/* ---------- drag & resize helpers ---------- */
+function makeDraggable(el, header){
+  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  header.onmousedown = dragMouseDown;
+  header.ondragstart = () => false;
+  function dragMouseDown(e){
+    e = e || window.event;
+    e.preventDefault();
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onmouseup = closeDrag;
+    document.onmousemove = elementDrag;
+    el.style.zIndex = getMaxZIndex() + 1;
+  }
+  function elementDrag(e){
+    e = e || window.event;
+    e.preventDefault();
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    el.style.top = (el.offsetTop - pos2) + "px";
+    el.style.left = (el.offsetLeft - pos1) + "px";
+  }
+  function closeDrag(){
+    document.onmouseup = null;
+    document.onmousemove = null;
+  }
+}
+
+function makeResizable(el, resizer){
+  let startX=0, startY=0, startW=0, startH=0;
+  resizer.addEventListener('mousedown', function(e){
+    e.preventDefault();
+    startX = e.clientX; startY = e.clientY;
+    startW = el.offsetWidth; startH = el.offsetHeight;
+    document.documentElement.addEventListener('mousemove', resize);
+    document.documentElement.addEventListener('mouseup', stop);
+  });
+  function resize(e){
+    el.style.width = Math.max(240, startW + (e.clientX - startX)) + 'px';
+    el.style.height = Math.max(160, startH + (e.clientY - startY)) + 'px';
+  }
+  function stop(){
+    document.documentElement.removeEventListener('mousemove', resize);
+    document.documentElement.removeEventListener('mouseup', stop);
+  }
+}
+
+/* ---------- small startup helpers ---------- */
+function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-'); }
+
+/* ---------- init ---------- */
+function initDesktopOnLoad(){
+  makeGradientOptionsInSetup();
+  if(localStorage.getItem('deviceName')) initDesktop();
+}
+function makeGradientOptionsInSetup(){
+  // preselect chosenGradient if saved
+  const saved = localStorage.getItem('wallpaper') || gradients[0];
+  chosenGradient = saved;
+  gradientChoices.innerHTML = '';
+  gradients.forEach((g, i) => {
+    const d = document.createElement('div');
+    d.className = 'gradient-option';
+    d.style.background = g;
+    d.addEventListener('click', () => {
+      chosenGradient = g;
+      document.querySelectorAll('.gradient-option').forEach(x => x.style.border = '2px solid rgba(255,255,255,0.12)');
+      d.style.border = '4px solid #ffd54a';
+    });
+    if(g === saved) d.style.border = '4px solid #ffd54a';
+    gradientChoices.appendChild(d);
+  });
+}
+
+/* ---------- run ---------- */
+initDesktopOnLoad();
 </script>
 </body>
 </html>
