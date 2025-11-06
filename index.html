@@ -5,12 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Really Unbl0ck3d OS</title>
 <style>
-/* Reset & base */
+/* --- your original styles preserved --- */
 *{box-sizing:border-box;margin:0;padding:0;font-family:Inter, Arial, sans-serif;user-select:none}
 html,body{height:100%;width:100%;overflow:hidden}
 body{background:#111}
-
-/* Setup modal */
 #setupModal{
   position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
   background:linear-gradient(180deg,#000,#444);z-index:9999;color:#fff;
@@ -21,23 +19,16 @@ body{background:#111}
 .setup-card .gradients{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:10px 0}
 .gradient-option{width:96px;height:64px;border-radius:8px;border:2px solid rgba(255,255,255,0.12);cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.4)}
 .setup-card button{margin-top:10px;padding:10px 14px;border-radius:8px;border:none;background:#1e90ff;color:#fff;font-weight:600;cursor:pointer}
-
-/* Desktop */
 #desktop{position:relative;width:100%;height:100%;background-size:cover;background-position:center;overflow:hidden;padding:18px;padding-bottom:84px}
-
-/* App icons */
 .app{width:80px;text-align:center;cursor:pointer;margin:10px;display:inline-block}
 .app img{width:64px;height:64px;display:block;margin:0 auto 6px;border-radius:10px}
 .app div{color:#fff;font-size:12px;text-align:center;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-/* Window */
 .window{
   position:absolute;width:720px;height:520px;background:#0f1113;border-radius:12px;display:none;flex-direction:column;
   box-shadow:0 20px 60px rgba(0,0,0,0.7);overflow:hidden;border:1px solid rgba(255,255,255,0.03)
 }
 .window-header{
   height:44px;background:linear-gradient(180deg,#2b2b2b,#222);display:flex;align-items:center;justify-content:space-between;padding:6px 12px;cursor:grab;
-  user-select:none
 }
 .window-left{display:flex;align-items:center;gap:8px}
 .window-title{color:#fff;font-weight:600;font-size:14px}
@@ -47,11 +38,7 @@ body{background:#111}
 .c-min{background:#ffbd44}
 .c-max{background:#00ca4e}
 .window-content{flex:1;background:#0b0c0d;padding:0;overflow:hidden}
-
-/* resizer */
 .resizer{position:absolute;right:4px;bottom:4px;width:12px;height:12px;cursor:se-resize}
-
-/* Games list */
 #gamesAppInner{padding:14px}
 .game-card{display:flex;background:#111;border-radius:10px;margin-bottom:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
 .game-card img{width:140px;height:96px;object-fit:cover}
@@ -59,8 +46,6 @@ body{background:#111}
 .game-info h3{color:#fff;margin-bottom:6px;font-size:15px}
 .game-info p{color:#cfcfcf;font-size:13px;margin-bottom:8px}
 .game-info button{align-self:flex-start;padding:8px 10px;border-radius:8px;border:none;background:#1e90ff;color:#fff;cursor:pointer}
-
-/* Taskbar (dock) */
 #taskbar{position:fixed;left:0;right:0;bottom:0;height:64px;background:linear-gradient(180deg,rgba(0,0,0,0.35),rgba(0,0,0,0.6));display:flex;align-items:center;justify-content:space-between;padding:8px 16px;backdrop-filter: blur(6px);z-index:9998}
 .task-left{display:flex;align-items:center;gap:12px}
 .avatar{width:44px;height:44px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,0.08)}
@@ -71,14 +56,12 @@ body{background:#111}
 .dock-item img{width:32px;height:32px}
 .dock-item.running{box-shadow:0 6px 18px rgba(0,0,0,0.6);transform:translateY(-6px)}
 .task-right{color:#fff;font-weight:600}
-
-/* small helpers */
 .hidden{display:none}
 </style>
 </head>
 <body>
 
-<!-- Setup -->
+<!-- Setup Modal -->
 <div id="setupModal">
   <div class="setup-card">
     <h2>Welcome to Really Unbl0ck3d</h2>
@@ -93,7 +76,7 @@ body{background:#111}
 <!-- Desktop -->
 <div id="desktop"></div>
 
-<!-- Taskbar (dock) -->
+<!-- Taskbar -->
 <div id="taskbar">
   <div class="task-left">
     <div class="avatar" id="taskAvatar"><img src="" alt="avatar"></div>
@@ -112,315 +95,177 @@ const gradients = [
   "linear-gradient(135deg,#42275a,#734b6d)",
   "linear-gradient(135deg,#485563,#29323c)"
 ];
+const desktop=document.getElementById('desktop');
+const setupModal=document.getElementById('setupModal');
+const gradientChoices=document.getElementById('gradientChoices');
+const finishBtn=document.getElementById('finishBtn');
+const taskAvatar=document.getElementById('taskAvatar').querySelector('img');
+const taskDeviceName=document.getElementById('taskDeviceName');
+const dockCenter=document.getElementById('dockCenter');
+const taskTime=document.getElementById('taskTime');
+let chosenGradient=gradients[0];
+let openWindows={};
+let dockEntries={};
 
-const desktop = document.getElementById('desktop');
-const setupModal = document.getElementById('setupModal');
-const gradientChoices = document.getElementById('gradientChoices');
-const finishBtn = document.getElementById('finishBtn');
-const taskAvatar = document.getElementById('taskAvatar').querySelector('img');
-const taskDeviceName = document.getElementById('taskDeviceName');
-const dockCenter = document.getElementById('dockCenter');
-const taskTime = document.getElementById('taskTime');
-
-let chosenGradient = gradients[0];
-let openWindows = {};
-let dockEntries = {};
-
-/* -------- gradient picker -------- */
+/* gradient picker */
 function makeGradientOptions(){
-  gradientChoices.innerHTML = "";
-  gradients.forEach((g, i) => {
-    const d = document.createElement('div');
-    d.className = 'gradient-option';
-    d.style.background = g;
-    if(i===0) d.style.border = "4px solid #ffd54a";
-    d.addEventListener('click', () => {
-      document.querySelectorAll('.gradient-option').forEach(x => x.style.border = '2px solid rgba(255,255,255,0.12)');
-      d.style.border = "4px solid #ffd54a";
-      chosenGradient = g;
+  gradientChoices.innerHTML="";
+  gradients.forEach((g,i)=>{
+    const d=document.createElement('div');
+    d.className='gradient-option';
+    d.style.background=g;
+    if(i===0)d.style.border="4px solid #ffd54a";
+    d.addEventListener('click',()=>{
+      document.querySelectorAll('.gradient-option').forEach(x=>x.style.border='2px solid rgba(255,255,255,0.12)');
+      d.style.border="4px solid #ffd54a";
+      chosenGradient=g;
     });
     gradientChoices.appendChild(d);
   });
 }
 makeGradientOptions();
 
-finishBtn.addEventListener('click', () => {
-  const name = document.getElementById('deviceNameInput').value || "Really Unbl0ck3d";
-  const avatar = document.getElementById('avatarInput').value || "https://cdn-icons-png.flaticon.com/512/1055/1055646.png";
-  localStorage.setItem('deviceName', name);
-  localStorage.setItem('avatarURL', avatar);
-  localStorage.setItem('wallpaper', chosenGradient);
-  setupModal.style.display = 'none';
+finishBtn.addEventListener('click',()=>{
+  const name=document.getElementById('deviceNameInput').value||"Really Unbl0ck3d";
+  const avatar=document.getElementById('avatarInput').value||"https://cdn-icons-png.flaticon.com/512/1055/1055646.png";
+  localStorage.setItem('deviceName',name);
+  localStorage.setItem('avatarURL',avatar);
+  localStorage.setItem('wallpaper',chosenGradient);
+  setupModal.style.display='none';
   initDesktop();
 });
+if(localStorage.getItem('deviceName')){setupModal.style.display='none';initDesktop();}
 
-if(localStorage.getItem('deviceName')) {
-  setupModal.style.display = 'none';
-  initDesktop();
-}
+/* time */
+function updateTime(){const n=new Date();const hh=String(n.getHours()).padStart(2,'0');const mm=String(n.getMinutes()).padStart(2,'0');taskTime.textContent=`${hh}:${mm}`;}
+setInterval(updateTime,1000);updateTime();
 
-/* -------- time -------- */
-function updateTime(){
-  const now = new Date();
-  const hh = String(now.getHours()).padStart(2,'0');
-  const mm = String(now.getMinutes()).padStart(2,'0');
-  taskTime.textContent = `${hh}:${mm}`;
-}
-setInterval(updateTime, 1000);
-updateTime();
-
-/* -------- init desktop -------- */
+/* init desktop */
 function initDesktop(){
-  const wallpaper = localStorage.getItem('wallpaper') || chosenGradient;
-  desktop.style.background = wallpaper;
-  const avatarURL = localStorage.getItem('avatarURL') || "https://cdn-icons-png.flaticon.com/512/1055/1055646.png";
-  const deviceName = localStorage.getItem('deviceName') || "Really Unbl0ck3d";
-  taskAvatar.src = avatarURL;
-  taskDeviceName.textContent = deviceName;
-
-  desktop.innerHTML = "";
-
-  addApp({id:'app-games', name:'Games', img:'https://cdn-icons-png.flaticon.com/512/1055/1055646.png'}, openGamesApp);
-  addApp({id:'app-settings', name:'Settings', img:'https://cdn-icons-png.flaticon.com/512/3524/3524659.png'}, openSettingsApp);
-  addApp({id:'app-credits', name:'Credits', img:'https://cdn-icons-png.flaticon.com/512/1828/1828884.png'}, openCreditsApp);
-
-  const installed = JSON.parse(localStorage.getItem('desktopGames') || '[]');
-  installed.forEach(g => addApp({id: 'game-' + slug(g.name), name: g.name, img: g.img, file: g.file}, () => openGameWindow(g)));
+  desktop.style.background=localStorage.getItem('wallpaper')||chosenGradient;
+  taskAvatar.src=localStorage.getItem('avatarURL')||"https://cdn-icons-png.flaticon.com/512/1055/1055646.png";
+  taskDeviceName.textContent=localStorage.getItem('deviceName')||"Really Unbl0ck3d";
+  desktop.innerHTML="";
+  addApp({id:'app-settings',name:'Settings',img:'https://cdn-icons-png.flaticon.com/512/3524/3524659.png'},openSettingsApp);
+  addApp({id:'app-credits',name:'Credits',img:'https://cdn-icons-png.flaticon.com/512/1828/1828884.png'},openCreditsApp);
+  addApp({id:'app-games',name:'Games',img:'https://cdn-icons-png.flaticon.com/512/1055/1055646.png'},openGamesApp);
+  JSON.parse(localStorage.getItem('desktopGames')||'[]').forEach(g=>addApp({id:'game-'+slug(g.name),name:g.name,img:g.img,file:g.file},()=>openGameWindow(g)));
 }
-
-function addApp(appMeta, onClick){
-  const el = document.createElement('div');
-  el.className = 'app';
-  el.innerHTML = `<img src="${appMeta.img}" alt="${appMeta.name}"><div>${appMeta.name}</div>`;
-  el.addEventListener('click', onClick);
-  desktop.appendChild(el);
+function addApp(meta,fn){const e=document.createElement('div');e.className='app';e.innerHTML=`<img src="${meta.img}"><div>${meta.name}</div>`;e.onclick=fn;desktop.appendChild(e);}
+function addDockIcon(id,title,icon,winId){
+  if(dockEntries[id]){dockEntries[id].winId=winId;dockEntries[id].el.classList.add('running');return;}
+  const e=document.createElement('div');e.className='dock-item running';e.innerHTML=`<img src="${icon}" title="${title}">`;
+  e.onclick=()=>{const w=openWindows[dockEntries[id].winId]?.el;if(!w)return;w.style.display=w.style.display==='none'?'flex':'none';};
+  dockCenter.appendChild(e);dockEntries[id]={el:e,winId};
 }
+function removeDockIcon(id){if(!dockEntries[id])return;dockEntries[id].el.remove();delete dockEntries[id];}
 
-/* -------- dock management -------- */
-function addDockIcon(appId, title, iconSrc, winId){
-  if(dockEntries[appId]){
-    const entry = dockEntries[appId];
-    entry.winId = winId || entry.winId;
-    entry.el.classList.add('running');
-    return;
-  }
-  const el = document.createElement('div');
-  el.className = 'dock-item running';
-  el.innerHTML = `<img src="${iconSrc}" alt="${title}" title="${title}">`;
-  el.addEventListener('click', () => {
-    const entry = dockEntries[appId];
-    if(!entry) return;
-    const win = openWindows[entry.winId]?.el;
-    if(!win) return;
-    if(win.style.display === 'none') {
-      win.style.display = 'flex';
-      win.style.zIndex = getMaxZIndex() + 1;
-    } else win.style.display = 'none';
-  });
-  dockCenter.appendChild(el);
-  dockEntries[appId] = {el, winId};
-}
-function removeDockIcon(appId){
-  if(!dockEntries[appId]) return;
-  dockEntries[appId].el.remove();
-  delete dockEntries[appId];
-}
-
-/* -------- games -------- */
-const sampleGames = [
-  {name:'Gladhoppers', desc:'Suggested By Seth.', img:'https://img.itch.zone/aW1nLzI1Mzk3MTkuanBn/original/T88HJe.jpg', file:'games/Gladhoppers.html'},
-];
-
+/* games app */
+const sampleGames=[{name:'Gladhoppers',desc:'Suggested By Seth.',img:'https://img.itch.zone/aW1nLzI1Mzk3MTkuanBn/original/T88HJe.jpg',file:'games/Gladhoppers.html'}];
 function openGamesApp(){
-  const content = document.createElement('div');
-  content.id = 'gamesAppInner';
-  content.innerHTML = `<h2 style="color:#fff;margin-bottom:10px">Games Library</h2>`;
-  const installed = JSON.parse(localStorage.getItem('desktopGames') || '[]');
-
+  const content=document.createElement('div');content.id='gamesAppInner';content.innerHTML='<h2 style="color:#fff;margin-bottom:10px">Games Library</h2>';
+  const installed=JSON.parse(localStorage.getItem('desktopGames')||'[]');
   sampleGames.forEach(g=>{
-    const isInstalled = installed.some(x=>x.name===g.name);
-    const card = document.createElement('div');
-    card.className = 'game-card';
-    card.innerHTML = `
-      <img src="${g.img}" alt="${g.name}">
-      <div class="game-info">
-        <div><h3>${g.name}</h3><p>${g.desc}</p></div>
-        <div style="display:flex;gap:8px">
-          <button class="playBtn" style="display:${isInstalled?'inline-block':'none'}">Open</button>
-          <button class="installBtn">${isInstalled?'Installed':'Download'}</button>
-        </div>
-      </div>`;
-    const playBtn = card.querySelector('.playBtn');
-    const installBtn = card.querySelector('.installBtn');
-    playBtn.onclick = () => openGameWindow(g);
-    installBtn.onclick = () => {
-      if(!isInstalled){
-        installGame(g);
-        playBtn.style.display = 'inline-block';
-        installBtn.textContent = 'Installed';
-      }
-    };
+    const isInstalled=installed.some(x=>x.name===g.name);
+    const card=document.createElement('div');card.className='game-card';
+    card.innerHTML=`<img src="${g.img}"><div class="game-info"><div><h3>${g.name}</h3><p>${g.desc}</p></div>
+    <div style="display:flex;gap:8px">
+      <button class="playBtn" style="display:${isInstalled?'inline-block':'none'}">Open</button>
+      <button class="installBtn">${isInstalled?'Installed':'Download'}</button>
+      <button class="deleteBtn" style="display:${isInstalled?'inline-block':'none'};background:#ff605c">Delete</button>
+    </div></div>`;
+    const playBtn=card.querySelector('.playBtn');
+    const installBtn=card.querySelector('.installBtn');
+    const deleteBtn=card.querySelector('.deleteBtn');
+    playBtn.onclick=()=>openGameWindow(g);
+    installBtn.onclick=()=>{if(!isInstalled){installGame(g);playBtn.style.display='inline-block';installBtn.textContent='Installed';deleteBtn.style.display='inline-block';}};
+    deleteBtn.onclick=()=>{if(confirm('Delete this game from desktop?')){deleteGame(g.name);card.remove();}};
     content.appendChild(card);
   });
-
-  openWindow({title:'Games', icon:'https://cdn-icons-png.flaticon.com/512/1055/1055646.png'}, content);
+  openWindow({title:'Games',icon:'https://cdn-icons-png.flaticon.com/512/1055/1055646.png'},content);
 }
 
-/* -------- settings app -------- */
+/* delete game */
+function deleteGame(name){
+  let installed=JSON.parse(localStorage.getItem('desktopGames')||'[]');
+  installed=installed.filter(g=>g.name!==name);
+  localStorage.setItem('desktopGames',JSON.stringify(installed));
+  const gameEl=document.querySelector(`#desktop .app div:textContent("${name}")`);
+  document.querySelectorAll('.app').forEach(a=>{if(a.querySelector('div').textContent===name)a.remove();});
+}
+
+/* settings */
 function openSettingsApp(){
-  const content = document.createElement('div');
-  const currentName = localStorage.getItem('deviceName') || '';
-  const currentAvatar = localStorage.getItem('avatarURL') || '';
-  content.innerHTML = `
-    <h2 style="color:#fff">Settings</h2>
+  const content=document.createElement('div');
+  const currentName=localStorage.getItem('deviceName')||'';const currentAvatar=localStorage.getItem('avatarURL')||'';
+  content.innerHTML=`<h2 style="color:#fff">Settings</h2>
     <div style="margin-top:10px;color:#ddd">Device name</div>
     <input id="settingsName" style="width:100%;padding:8px;margin-top:6px;border-radius:8px;border:none;background:#0b0b0b;color:#fff" value="${currentName}">
     <div style="margin-top:10px;color:#ddd">Avatar URL</div>
     <input id="settingsAvatar" style="width:100%;padding:8px;margin-top:6px;border-radius:8px;border:none;background:#0b0b0b;color:#fff" value="${currentAvatar}">
-    <div style="margin-top:10px;color:#ddd">Wallpaper</div>
-    <div id="settingsGradients" style="display:flex;flex-wrap:wrap;margin-top:8px"></div>
-    <div style="margin-top:12px"><button id="saveSettingsBtn" style="padding:8px 12px;border-radius:8px;border:none;background:#1e90ff;color:#fff">Save</button></div>
-  `;
-  const mg = content.querySelector('#settingsGradients');
-  gradients.forEach((g, idx) => {
-    const o = document.createElement('div');
-    o.className = 'gradient-option';
-    o.style.background = g;
-    o.addEventListener('click', () => {
-      chosenGradient = g;
-      document.querySelectorAll('#settingsGradients .gradient-option').forEach(x => x.style.border = '2px solid rgba(255,255,255,0.12)');
-      o.style.border = '4px solid #ffd54a';
-    });
-    mg.appendChild(o);
-  });
-
-  const win = openWindow({title:'Settings', icon:'https://cdn-icons-png.flaticon.com/512/3524/3524659.png'}, content);
-  content.querySelector('#saveSettingsBtn').onclick = () => {
-    const name = content.querySelector('#settingsName').value || 'Really Unbl0ck3d';
-    const avatar = content.querySelector('#settingsAvatar').value || 'https://cdn-icons-png.flaticon.com/512/1055/1055646.png';
-    localStorage.setItem('deviceName', name);
-    localStorage.setItem('avatarURL', avatar);
-    localStorage.setItem('wallpaper', chosenGradient);
-    taskDeviceName.textContent = name;
-    taskAvatar.src = avatar;
-    desktop.style.background = chosenGradient;
-    alert('Settings saved.');
-  };
+    <div style="margin-top:10px;color:#ddd">Wallpaper</div><div id="settingsGradients" style="display:flex;flex-wrap:wrap;margin-top:8px"></div>
+    <div style="margin-top:12px"><button id="saveSettingsBtn" style="padding:8px 12px;border-radius:8px;border:none;background:#1e90ff;color:#fff">Save</button></div>`;
+  const mg=content.querySelector('#settingsGradients');
+  gradients.forEach(g=>{const o=document.createElement('div');o.className='gradient-option';o.style.background=g;
+    o.onclick=()=>{chosenGradient=g;document.querySelectorAll('#settingsGradients .gradient-option').forEach(x=>x.style.border='2px solid rgba(255,255,255,0.12)');o.style.border='4px solid #ffd54a';};
+    mg.appendChild(o);});
+  openWindow({title:'Settings',icon:'https://cdn-icons-png.flaticon.com/512/3524/3524659.png'},content);
+  content.querySelector('#saveSettingsBtn').onclick=()=>{const name=content.querySelector('#settingsName').value||'Really Unbl0ck3d';const avatar=content.querySelector('#settingsAvatar').value||'https://cdn-icons-png.flaticon.com/512/1055/1055646.png';
+    localStorage.setItem('deviceName',name);localStorage.setItem('avatarURL',avatar);localStorage.setItem('wallpaper',chosenGradient);
+    taskDeviceName.textContent=name;taskAvatar.src=avatar;desktop.style.background=chosenGradient;alert('Settings saved.');};
 }
 
-/* -------- credits app -------- */
+/* credits */
 function openCreditsApp(){
-  const content = document.createElement('div');
-  content.style.color="#fff";
-  content.style.padding="20px";
-  content.style.fontSize="18px";
-  content.innerHTML = `
+  const content=document.createElement('div');content.style.color="#fff";content.style.padding="20px";content.innerHTML=`
     <h2>REALLY UNBL0CK3D CREDITS</h2>
-    <p style="margin-top:10px">OWNER - LUKAS</p>
-    <p>HELPER - PAXTAN</p>
-    <p>POOKIES - NICK, SETH, PARKER</p>
-  `;
-  openWindow({title:'Credits', icon:'https://cdn-icons-png.flaticon.com/512/1828/1828884.png'}, content);
+    <p>OWNER - LUKAS</p><p>HELPER - PAXTAN</p><p>POOKIES - NICK, SETH, PARKER</p>`;
+  openWindow({title:'Credits',icon:'https://cdn-icons-png.flaticon.com/512/1828/1828884.png'},content);
 }
 
-/* -------- game window -------- */
+/* open game window */
 function openGameWindow(g){
-  const iframe = document.createElement('iframe');
-  iframe.src = g.file;
-  iframe.style.width = '100%';
-  iframe.style.height = '100%';
-  iframe.style.border = 'none';
-  openWindow({title:g.name, icon:g.img}, iframe);
+  const iframe=document.createElement('iframe');iframe.src=g.file;iframe.style.width='100%';iframe.style.height='100%';iframe.style.border='none';
+  openWindow({title:g.name,icon:g.img},iframe);
 }
 
-/* -------- install game -------- */
+/* install game */
 function installGame(g){
-  let installed = JSON.parse(localStorage.getItem('desktopGames') || '[]');
+  let installed=JSON.parse(localStorage.getItem('desktopGames')||'[]');
   installed.push(g);
-  localStorage.setItem('desktopGames', JSON.stringify(installed));
+  localStorage.setItem('desktopGames',JSON.stringify(installed));
   addApp({id:'game-'+slug(g.name),name:g.name,img:g.img,file:g.file},()=>openGameWindow(g));
 }
 
-/* -------- window system -------- */
-function openWindow(meta, content){
-  const id = slug(meta.title)+'-'+Date.now();
-  const win = document.createElement('div');
-  win.className = 'window';
-  win.innerHTML = `
-    <div class="window-header">
-      <div class="window-left">
-        <div class="circle c-close"></div>
-        <div class="circle c-min"></div>
-        <div class="circle c-max"></div>
-        <div class="window-title">${meta.title}</div>
-      </div>
-    </div>
-    <div class="window-content"></div>
-    <div class="resizer"></div>
-  `;
-  win.querySelector('.window-content').appendChild(content);
-  desktop.appendChild(win);
-  addDockIcon(slug(meta.title), meta.title, meta.icon, id);
-  win.style.display='flex';
-  win.style.top = (100+Math.random()*60)+'px';
-  win.style.left = (100+Math.random()*60)+'px';
-  makeDraggable(win, win.querySelector('.window-header'));
-  makeResizable(win, win.querySelector('.resizer'));
-  win.style.zIndex = getMaxZIndex()+1;
-  openWindows[id] = {el:win};
-
-  const [cclose,cmin,cmax] = win.querySelectorAll('.circle');
-  cclose.onclick = () => { win.remove(); removeDockIcon(slug(meta.title)); delete openWindows[id]; };
-  cmin.onclick = () => { win.style.display='none'; };
-  let maximized = false, original={};
-  cmax.onclick = () => {
-    if(!maximized){ 
-      original={top:win.offsetTop,left:win.offsetLeft,width:win.offsetWidth,height:win.offsetHeight};
-      win.style.top='0px';win.style.left='0px';win.style.width='100%';win.style.height='100%';
-      maximized=true;
-    } else {
-      win.style.top=original.top+'px';win.style.left=original.left+'px';
-      win.style.width=original.width+'px';win.style.height=original.height+'px';
-      maximized=false;
-    }
-  };
+/* window system */
+function openWindow(meta,content){
+  const id=slug(meta.title)+'-'+Date.now();
+  const win=document.createElement('div');
+  win.className='window';
+  win.innerHTML=`<div class="window-header"><div class="window-left">
+  <div class="circle c-close"></div><div class="circle c-min"></div><div class="circle c-max"></div>
+  <div class="window-title">${meta.title}</div></div></div><div class="window-content"></div><div class="resizer"></div>`;
+  win.querySelector('.window-content').appendChild(content);desktop.appendChild(win);
+  addDockIcon(slug(meta.title),meta.title,meta.icon,id);
+  win.style.display='flex';win.style.top=(100+Math.random()*60)+'px';win.style.left=(100+Math.random()*60)+'px';
+  makeDraggable(win,win.querySelector('.window-header'));makeResizable(win,win.querySelector('.resizer'));win.style.zIndex=getMaxZIndex()+1;
+  openWindows[id]={el:win};
+  const[cclose,cmin,cmax]=win.querySelectorAll('.circle');
+  cclose.onclick=()=>{win.remove();removeDockIcon(slug(meta.title));delete openWindows[id];};
+  cmin.onclick=()=>{win.style.display='none';};
+  let max=false,orig={};cmax.onclick=()=>{if(!max){orig={t:win.offsetTop,l:win.offsetLeft,w:win.offsetWidth,h:win.offsetHeight};
+    win.style.top='0';win.style.left='0';win.style.width='100%';win.style.height='100%';max=true;}
+    else{win.style.top=orig.t+'px';win.style.left=orig.l+'px';win.style.width=orig.w+'px';win.style.height=orig.h+'px';max=false;}};
   return win;
 }
 
-/* -------- draggable & resizable -------- */
-function makeDraggable(elmnt,header){
-  let pos1=0,pos2=0,pos3=0,pos4=0;
-  header.onmousedown=dragMouseDown;
-  function dragMouseDown(e){
-    e.preventDefault();
-    pos3=e.clientX;pos4=e.clientY;
-    document.onmouseup=closeDrag;
-    document.onmousemove=elementDrag;
-    elmnt.style.zIndex=getMaxZIndex()+1;
-  }
-  function elementDrag(e){
-    e.preventDefault();
-    pos1=pos3-e.clientX;pos2=pos4-e.clientY;
-    pos3=e.clientX;pos4=e.clientY;
-    elmnt.style.top=(elmnt.offsetTop-pos2)+"px";
-    elmnt.style.left=(elmnt.offsetLeft-pos1)+"px";
-  }
-  function closeDrag(){document.onmouseup=null;document.onmousemove=null;}
-}
-function makeResizable(elmnt,resizer){
-  let startX=0,startY=0,startW=0,startH=0;
-  resizer.onmousedown=function(e){
-    e.preventDefault();
-    startX=e.clientX;startY=e.clientY;
-    startW=elmnt.offsetWidth;startH=elmnt.offsetHeight;
-    document.onmouseup=stop;document.onmousemove=resize;
-  };
-  function resize(e){
-    elmnt.style.width=(startW+(e.clientX-startX))+"px";
-    elmnt.style.height=(startH+(e.clientY-startY))+"px";
-  }
-  function stop(){document.onmouseup=null;document.onmousemove=null;}
-}
+/* draggable/resizable */
+function makeDraggable(e,h){let p1=0,p2=0,p3=0,p4=0;h.onmousedown=dmd;function dmd(ev){ev.preventDefault();p3=ev.clientX;p4=ev.clientY;document.onmouseup=cd;document.onmousemove=md;e.style.zIndex=getMaxZIndex()+1;}
+function md(ev){ev.preventDefault();p1=p3-ev.clientX;p2=p4-ev.clientY;p3=ev.clientX;p4=ev.clientY;e.style.top=(e.offsetTop-p2)+'px';e.style.left=(e.offsetLeft-p1)+'px';}
+function cd(){document.onmouseup=null;document.onmousemove=null;}}
+function makeResizable(e,r){let sx=0,sy=0,sw=0,sh=0;r.onmousedown=function(ev){ev.preventDefault();sx=ev.clientX;sy=ev.clientY;sw=e.offsetWidth;sh=e.offsetHeight;document.onmouseup=st;document.onmousemove=rs;};
+function rs(ev){e.style.width=(sw+(ev.clientX-sx))+'px';e.style.height=(sh+(ev.clientY-sy))+'px';}
+function st(){document.onmouseup=null;document.onmousemove=null;}}
 function getMaxZIndex(){let m=0;document.querySelectorAll('.window').forEach(w=>{const z=parseInt(getComputedStyle(w).zIndex)||1;if(z>m)m=z;});return m;}
 function slug(s){return s.toLowerCase().replace(/[^a-z0-9]+/g,'-');}
 </script>
