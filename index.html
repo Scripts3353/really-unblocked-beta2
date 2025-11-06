@@ -186,13 +186,24 @@ function openGamesApp(){
 }
 
 /* delete game */
-function deleteGame(name){
-  let installed=JSON.parse(localStorage.getItem('desktopGames')||'[]');
-  installed=installed.filter(g=>g.name!==name);
-  localStorage.setItem('desktopGames',JSON.stringify(installed));
-  const gameEl=document.querySelector(`#desktop .app div:textContent("${name}")`);
-  document.querySelectorAll('.app').forEach(a=>{if(a.querySelector('div').textContent===name)a.remove();});
+/* delete game */
+function deleteGame(name) {
+  // Remove from localStorage
+  let installed = JSON.parse(localStorage.getItem('desktopGames') || '[]');
+  installed = installed.filter(g => g.name !== name);
+  localStorage.setItem('desktopGames', JSON.stringify(installed));
+
+  // Remove from desktop icons
+  document.querySelectorAll('#desktop .app').forEach(app => {
+    if (app.querySelector('div').textContent === name) {
+      app.remove();
+    }
+  });
+
+  // Remove from dock if it's open
+  removeDockIcon(slug(name));
 }
+
 
 /* settings */
 function openSettingsApp(){
